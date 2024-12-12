@@ -1,3 +1,4 @@
+.idea/
 
 Digraph.gv
 
@@ -8,3 +9,5 @@ exo1.txt
 parser.out
 
 parsetab.py
+
+__pycache__/
