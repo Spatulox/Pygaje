@@ -36,7 +36,7 @@ tokens = [ 'NUMBER',
            'ASSIGN',
            'CALC',
            'SIMPLECALC',
-           'CONDITIONS','COMMA']  + list(reserved.values())
+           'CONDITIONS','COMMA','FUNCTION']  + list(reserved.values())
 
 t_PLUS = r'\+' 
 t_MINUS = r'-' 
@@ -52,6 +52,8 @@ t_AND = r'&'
 t_OR = r'\|'
 
 t_SEMICOLON = r';'
+
+t_FUNCTION = r'function'
 
 def t_ID(t):
     r'[a-zA-Z_][a-zA-Z_0-9]*'
@@ -161,6 +163,10 @@ def p_statement_function(p):
 def p_statement_function_call(p):
     'statement : NAME LPAREN args RPAREN'
     p[0] = ('call', p[1], p[3])
+
+def p_empty(p):
+    'empty :'
+    p[0] = []
 
 def p_params(p):
     '''params : NAME COMMA params
