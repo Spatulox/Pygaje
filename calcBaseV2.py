@@ -206,33 +206,15 @@ def p_error(p):
 import ply.yacc as yacc
 yacc.yacc()
 s = input('calc > ')
-block = ""
-isBlock = False
-openBraces = 0
 while(s != "exit"):
-
-    if isBlock or s.strip().endswith("{"):
-        isBlock = True
-        block += s + '\n'
-        openBraces += s.count("{") - s.count("}")
-        if openBraces == 0:
-
-            parsed = yacc.parse(block.strip())
-            print(1)
-            print(parsed)
+    if ".pj" in s:
+        with open(s, 'r') as f:
+            contenu = f.read()
+            parsed = yacc.parse(contenu)
             evalPerso(parsed)
             printTreeGraph(parsed)
-            block = ""
-            isBlock = False
-
     else:
         parsed = yacc.parse(s)
-        print(2)
-        print(parsed)
         evalPerso(parsed)
         printTreeGraph(parsed)
-
-    if not isBlock:
-        s = ""
-
     s = input('calc > ')
