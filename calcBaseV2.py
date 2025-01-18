@@ -13,7 +13,10 @@ reserved = {
    # 'then' : 'THEN',
    # 'else' : 'ELSE',
    # 'while' : 'WHILE',
-   'print' : 'PRINT',
+    'print' : 'PRINT',
+    'return' : 'RETURN',
+    'function' : 'FUNCTION'
+
 }
 
 precedence = (
@@ -36,7 +39,7 @@ tokens = [ 'NUMBER',
            'ASSIGN',
            'CALC',
            'SIMPLECALC',
-           'CONDITIONS','COMMA','FUNCTION']  + list(reserved.values())
+           'CONDITIONS','COMMA']  + list(reserved.values())
 
 t_PLUS = r'\+' 
 t_MINUS = r'-' 
@@ -47,13 +50,10 @@ t_RPAREN = r'\)'
 t_LBRACE = r'\{'
 t_RBRACE = r'\}'
 t_COMMA = r','
-
 t_AND = r'&'
 t_OR = r'\|'
-
 t_SEMICOLON = r';'
 
-t_FUNCTION = r'function'
 
 def t_ID(t):
     r'[a-zA-Z_][a-zA-Z_0-9]*'
@@ -156,6 +156,10 @@ def p_expression_name(p):
     'expression : NAME'
     p[0] = p[1]
 
+def p_empty(p):
+    'empty :'
+    p[0] = []
+
 def p_statement_function(p):
     'statement : FUNCTION NAME LPAREN params RPAREN LBRACE bloc RBRACE'
     p[0] = ('function', p[2], p[4], ('block', p[7]))
@@ -164,9 +168,14 @@ def p_statement_function_call(p):
     'statement : NAME LPAREN args RPAREN'
     p[0] = ('call', p[1], p[3])
 
-def p_empty(p):
-    'empty :'
-    p[0] = []
+def p_statement_return(p):
+    '''statement : RETURN expression
+    | RETURN '''
+    if len(p) >2 :
+        p[0] = ('return', p[2])
+    else:
+        p[0]=('return')
+
 
 def p_params(p):
     '''params : NAME COMMA params
@@ -191,6 +200,7 @@ def p_args(p):
         p[0] = []
 
 def p_error(p):
+    print(p)
     print("Syntax error in input!")
     
 import ply.yacc as yacc
@@ -206,16 +216,18 @@ while(s != "exit"):
         block += s + '\n'
         openBraces += s.count("{") - s.count("}")
         if openBraces == 0:
-            # Le bloc est complet
+
             parsed = yacc.parse(block.strip())
+            print(1)
             print(parsed)
             evalPerso(parsed)
             printTreeGraph(parsed)
             block = ""
             isBlock = False
+
     else:
-        # Traitement d'une ligne simple
         parsed = yacc.parse(s)
+        print(2)
         print(parsed)
         evalPerso(parsed)
         printTreeGraph(parsed)
