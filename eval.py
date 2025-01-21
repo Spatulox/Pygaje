@@ -123,6 +123,16 @@ def evalPerso(tupleVar):
             if len(params) != len(tupleVar[2]):
                 raise Exception(f"Function {tupleVar[1]} expected {len(params)} arguments, got {len(tupleVar[2])}.")
 
+            # old_vars = variable.copy()
+            #
+            # for param, arg in zip(params, tupleVar[2]):
+            #     variable[param] = evalPerso(arg)
+            #
+            # result = evalPerso(body)
+            #
+            # variable.clear()
+            # variable.update(old_vars)
+
             return
 
         case 'return':

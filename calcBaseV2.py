@@ -106,7 +106,6 @@ def t_error(t):
 
 lex.lex()
 
-
 def p_block(p):
     '''block : statement SEMICOLON block
              | statement SEMICOLON
