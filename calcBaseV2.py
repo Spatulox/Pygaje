@@ -94,11 +94,20 @@ def t_error(t):
 
 lex.lex()
 
+# def p_block(p):
+#     '''block : statement SEMICOLON block
+#      | statement SEMICOLON
+#      | statement'''
+#     p[0] = p[1]
+
 def p_block(p):
     '''block : statement SEMICOLON block
-     | statement SEMICOLON
-     | statement'''
-    p[0] = p[1]
+             | statement SEMICOLON
+             | statement'''
+    if len(p) == 4:
+        p[0] = ('block', p[1], p[3])
+    else:
+        p[0] = ('block', p[1])
 
 def p_statement_assign(p):
     'statement : NAME ASSIGN expression'
