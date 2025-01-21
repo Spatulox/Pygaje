@@ -3,7 +3,7 @@ functions = {}
 
 def evalPerso(tupleVar):
     #check tuplevar
-    print("tupleVar[0] =", tupleVar[0] if isinstance(tupleVar, tuple) else "Not a tuple")  # Affichage de tupleVar[0]
+    #print("tupleVar[0] =", tupleVar[0] if isinstance(tupleVar, tuple) else "Not a tuple")  # Affichage de tupleVar[0]
 
     if type(tupleVar) == int:
         return tupleVar
@@ -18,7 +18,6 @@ def evalPerso(tupleVar):
             return evalPerso(tupleVar[1]) * evalPerso(tupleVar[2])
         case '^':
             return evalPerso(tupleVar[1]) ** evalPerso(tupleVar[2])
-            #return evalPerso(tupleVar[1]) * evalPerso(tupleVar[2])
         case '/':
             tmpVar = evalPerso(tupleVar[2])
             if tmpVar == 0:
@@ -32,7 +31,7 @@ def evalPerso(tupleVar):
 
         case '==' | '>=' | '>' | '<=' | '<' | '!=':
             #print(f"condition : {tupleVar[1]} {tupleVar[0]} {tupleVar[2]}")
-            return eval(f"{tupleVar[1]} {tupleVar[0]} {tupleVar[2]}")
+            return eval(f"{evalPerso(tupleVar[1])} {tupleVar[0]} {evalPerso(tupleVar[2])}")
 
         case 'print':
             print(evalPerso(tupleVar[1]))
