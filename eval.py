@@ -46,9 +46,16 @@ def evalPerso(tupleVar):
                 evalPerso(tupleVar[2])
             else:
                 evalPerso(tupleVar[3])
+        case 'while':
+            while evalPerso(tupleVar[1]):
+                evalPerso(tupleVar[2])
 
         case 'block':
-            return evalPerso(tupleVar[1])
+            if len(tupleVar) == 3:
+                evalPerso(tupleVar[1])
+                return evalPerso(tupleVar[2])
+            else:
+                return evalPerso(tupleVar[1])
 
         case "=":
             variable[tupleVar[1]] = evalPerso(tupleVar[2])
