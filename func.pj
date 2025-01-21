@@ -1,0 +1,1 @@
+function test(a){print(1);return a;print(3);}
