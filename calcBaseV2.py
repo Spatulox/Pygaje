@@ -93,20 +93,19 @@ def t_error(t):
 
 lex.lex()
 
-def p_bloc(p):
-    #            | statement LINE
-    #        | statement
-    #        | LBRACE bloc RBRACE
+def p_block(p):
     '''bloc : statement SEMICOLON bloc
-            | statement SEMICOLON'''
-    if len(p) == 4 and p[1] == '{':
-        p[0] = p[2]
-    elif len(p) == 4:
-        p[0] = ('bloc', p[1], p[3])
-    elif len(p) == 3:
-        p[0] = p[1]
+     | statement SEMICOLON
+     | statement'''
+    p[0] = p[1]
+
+def p_block_block(p):
+    '''bloc : statement LBRACE statement RBRACE
+    | LBRACE statement RBRACE'''
+    if len(p) == 5:
+        p[0] = ('block', p[1], p[3])
     else:
-        p[0] = p[1]
+        p[0] = ('block', p[2])
 
 def p_statement_assign(p):
     'statement : NAME ASSIGN expression'
