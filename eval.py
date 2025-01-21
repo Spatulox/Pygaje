@@ -64,6 +64,23 @@ def evalPerso(tupleVar):
                         continue
                     elif check[0] == "return":
                         return check
+        case 'for':
+            evalPerso(tupleVar[1])
+            while evalPerso(tupleVar[2]):
+                result = evalPerso(tupleVar[4])
+
+                evalPerso(tupleVar[3])
+
+                check = checkBreakReturn(result)
+                if check:
+                    if check[0] == "break":
+                        break
+                    elif check[0] == "continue":
+                        continue
+                    elif check[0] == "return":
+                        return check
+
+            #print(tupleVar)
 
         case 'block':
             for statement in tupleVar[1:]:
