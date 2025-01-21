@@ -293,9 +293,9 @@ while (s != "exit"):
             contenu = f.read()
             parsed = yacc.parse(contenu)
             evalPerso(parsed)
-            printTreeGraph(parsed)
+          #  printTreeGraph(parsed)
     else:
         parsed = yacc.parse(s)
         evalPerso(parsed)
-        printTreeGraph(parsed)
+        # printTreeGraph(parsed)
     s = input('calc > ')
