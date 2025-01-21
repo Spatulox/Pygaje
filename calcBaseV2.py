@@ -102,9 +102,10 @@ def t_newline(t):
 def t_error(t):
     print("Illegal character '%s'" % t.value[0])
     t.lexer.skip(1)
-
-
+    
+import ply.lex as lex
 lex.lex()
+
 
 def p_block(p):
     '''block : statement SEMICOLON block
@@ -293,7 +294,7 @@ while (s != "exit"):
             contenu = f.read()
             parsed = yacc.parse(contenu)
             evalPerso(parsed)
-          #  printTreeGraph(parsed)
+        #  printTreeGraph(parsed)
     else:
         parsed = yacc.parse(s)
         evalPerso(parsed)
