@@ -1,17 +1,22 @@
+import array
+
 variable = {}
 functions = {}
 
 def evalPerso(tupleVar):
-    #check tuplevar
-    #print("tupleVar[0] =", tupleVar[0] if isinstance(tupleVar, tuple) else "Not a tuple")  # Affichage de tupleVar[0]
 
-    if type(tupleVar) == int:
+    if isinstance(tupleVar, (int, float)):
         return tupleVar
 
-    if type(tupleVar) == str:
+    if isinstance(tupleVar, list):
+        return tupleVar
+
+    if isinstance(tupleVar, str):
         if tupleVar in variable:
             return variable[tupleVar]
         return tupleVar
+
+    #print("tupleVar[0] =", tupleVar[0] if isinstance(tupleVar, tuple) else "Not a tuple")
 
     match(tupleVar[0]):
         case '*':
@@ -91,6 +96,12 @@ def evalPerso(tupleVar):
 
         case "=":
             variable[tupleVar[1]] = evalPerso(tupleVar[2])
+
+        case 'array_access':
+            return variable[tupleVar[1]][tupleVar[2]]
+
+        case 'array_replace':
+            variable[tupleVar[1]][tupleVar[2]] = evalPerso(tupleVar[3])
 
         case 'function':
 

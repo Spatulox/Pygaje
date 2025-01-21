@@ -37,6 +37,7 @@ tokens = ['NUMBER',
           'MINUS', 'PLUS', 'TIMES', 'DIVIDE', 'POW',
           'LPAREN', 'RPAREN',
           'LBRACE', 'RBRACE',
+          'LHOOK', 'RHOOK',
           'AND', 'OR',
           'SEMICOLON',
           'NAME',
@@ -55,6 +56,8 @@ t_LPAREN = r'\('
 t_RPAREN = r'\)'
 t_LBRACE = r'\{'
 t_RBRACE = r'\}'
+t_LHOOK = r'\['
+t_RHOOK = r'\]'
 
 t_IF = r'if'
 t_ELSE = r'else'
@@ -138,11 +141,12 @@ def p_statement_while(p):
     'statement : WHILE LPAREN expression RPAREN LBRACE block RBRACE'
     p[0] = ('while', p[3], p[6])
 
+
 def p_statement_for(p):
     '''statement :  FOR LPAREN NAME ASSIGN NAME         SEMICOLON expression SEMICOLON block RPAREN LBRACE block RBRACE
     |               FOR LPAREN NAME ASSIGN expression   SEMICOLON expression SEMICOLON block RPAREN LBRACE block RBRACE'''
     p[0] = ('for', ("=", p[3], p[5]), p[7], p[9], p[12])
-            #for    int i = 1,        i<5, i++, block
+    # for    int i = 1,        i<5, i++, block
 
 
 def p_statement_print(p):
@@ -212,6 +216,17 @@ def p_statement_function(p):
     'statement : FUNCTION NAME LPAREN params RPAREN LBRACE block RBRACE'
     p[0] = ('function', p[2], p[4], ('block', p[7]))
 
+def p_statement_array_declare(p):
+    'statement : NAME ASSIGN LHOOK args RHOOK'
+    p[0] = ("=", p[1], p[4])
+
+def p_statement_array_access(p):
+    'statement : NAME LHOOK expression RHOOK'
+    p[0] = ("array_access", p[1], p[3])
+
+def p_statement_array_acces_update(p):
+    'statement : NAME LHOOK NUMBER RHOOK ASSIGN expression'
+    p[0] = ("array_replace", p[1], p[3], p[6])
 
 def p_statement_function_call(p):
     'statement : NAME LPAREN args RPAREN'
