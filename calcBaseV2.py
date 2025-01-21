@@ -39,7 +39,8 @@ tokens = [ 'NUMBER',
            'ASSIGN',
            'CALC',
            'SIMPLECALC',
-           'CONDITIONS','COMMA']  + list(reserved.values())
+           'CONDITIONS',
+           'COMMA']  + list(reserved.values())
 
 t_PLUS = r'\+' 
 t_MINUS = r'-' 
@@ -94,18 +95,10 @@ def t_error(t):
 lex.lex()
 
 def p_block(p):
-    '''bloc : statement SEMICOLON bloc
+    '''block : statement SEMICOLON block
      | statement SEMICOLON
      | statement'''
     p[0] = p[1]
-
-def p_block_block(p):
-    '''bloc : statement LBRACE statement RBRACE
-    | LBRACE statement RBRACE'''
-    if len(p) == 5:
-        p[0] = ('block', p[1], p[3])
-    else:
-        p[0] = ('block', p[2])
 
 def p_statement_assign(p):
     'statement : NAME ASSIGN expression'
@@ -116,15 +109,15 @@ def p_statement_expr(p):
     p[0] = p[1]
 
 def p_statement_if(p):
-    '''statement : IF LPAREN expression RPAREN LBRACE bloc RBRACE
-                 | IF LPAREN expression RPAREN LBRACE bloc RBRACE ELSE LBRACE bloc RBRACE'''
+    '''statement : IF LPAREN expression RPAREN LBRACE block RBRACE
+                 | IF LPAREN expression RPAREN LBRACE block RBRACE ELSE LBRACE block RBRACE'''
     if len(p) == 8:
         p[0] = ('if', p[3], p[6])
     else:
         p[0] = ('if-else', p[3], p[6], p[10])
 
 def p_statement_while(p):
-    'statement : WHILE LPAREN expression RPAREN LBRACE bloc RBRACE'
+    'statement : WHILE LPAREN expression RPAREN LBRACE block RBRACE'
     p[0] = ('while', p[3], p[6])
 
 def p_statement_print(p):
@@ -136,7 +129,10 @@ def p_statement_print(p):
 #     p[0] = (p[2], p[1], p[3])
 
 def p_expression_condition(p):
-    'expression : expression CONDITIONS expression CONDITIONS'
+    '''expression : expression CONDITIONS expression
+    | expression CONDITIONS NAME
+    | NAME CONDITIONS expression
+    | NAME CONDITIONS NAME'''
     p[0] = (p[2], p[1], p[3])
 
 def p_expression_calc(p):
@@ -182,7 +178,7 @@ def p_empty(p):
     p[0] = []
 
 def p_statement_function(p):
-    'statement : FUNCTION NAME LPAREN params RPAREN LBRACE bloc RBRACE'
+    'statement : FUNCTION NAME LPAREN params RPAREN LBRACE block RBRACE'
     p[0] = ('function', p[2], p[4], ('block', p[7]))
 
 def p_statement_function_call(p):

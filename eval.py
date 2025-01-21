@@ -30,25 +30,22 @@ def evalPerso(tupleVar):
         case '+':
             return evalPerso(tupleVar[1]) + evalPerso(tupleVar[2])
 
-        case '==':
-            return evalPerso(tupleVar[1]) + evalPerso(tupleVar[2])
-        case '>=':
-            return evalPerso(tupleVar[1]) + evalPerso(tupleVar[2])
-        case '<=':
-            return evalPerso(tupleVar[1]) + evalPerso(tupleVar[2])
-        case '!=':
-            return evalPerso(tupleVar[1]) + evalPerso(tupleVar[2])
+        case '==' | '>=' | '>' | '<=' | '<' | '!=':
+            #print(f"condition : {tupleVar[1]} {tupleVar[0]} {tupleVar[2]}")
+            return eval(f"{tupleVar[1]} {tupleVar[0]} {tupleVar[2]}")
 
         case 'print':
             print(evalPerso(tupleVar[1]))
             return
 
-        case 'if' | 'if-else':
-            print("condition")
-
-        case 'bloc':
-            evalPerso(tupleVar[1])
-            evalPerso(tupleVar[2])
+        case 'if':
+            if evalPerso(tupleVar[1]):
+                evalPerso(tupleVar[2])
+        case 'if-else':
+            if evalPerso(tupleVar[1]):
+                evalPerso(tupleVar[2])
+            else:
+                evalPerso(tupleVar[3])
 
         case 'block':
             return evalPerso(tupleVar[1])
