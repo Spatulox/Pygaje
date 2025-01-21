@@ -108,6 +108,10 @@ def evalPerso(tupleVar):
             print("BREAK")
             return ("break",)
 
+        case 'continue':
+            print("CONTINUE")
+            return ("continue",)
+
         case 'exit':
             print("EXIT")
             exit()

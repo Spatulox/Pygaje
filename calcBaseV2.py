@@ -131,10 +131,6 @@ def p_statement_print(p):
     '''statement : PRINT expression'''
     p[0] = ("print", p[2])
 
-# def p_expression_condition(p):
-#     'expression : expression CONDITIONS expression %prec CONDITIONS'
-#     p[0] = (p[2], p[1], p[3])
-
 def p_expression_condition(p):
     '''expression : expression CONDITIONS expression
     | expression CONDITIONS NAME
