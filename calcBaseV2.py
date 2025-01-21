@@ -105,8 +105,7 @@ def p_block(p):
 
 
 def p_statement_assign(p):
-    '''statement : NAME ASSIGN expression
-    | NAME ASSIGN statement '''
+    'statement : NAME ASSIGN expression'
     p[0] = ("=", p[1], p[3])
 
 
@@ -175,12 +174,12 @@ def p_empty(p):
 
 
 def p_statement_function(p):
-    'statement : FUNCTION NAME LPAREN params RPAREN LBRACE block RBRACE'
+    'expression : FUNCTION NAME LPAREN params RPAREN LBRACE block RBRACE'
     p[0] = ('function', p[2], p[4], ('block', p[7]))
 
 
 def p_statement_function_call(p):
-    'statement : NAME LPAREN args RPAREN'
+    'expression : NAME LPAREN args RPAREN'
     p[0] = ('call', p[1], p[3])
 
 
