@@ -104,6 +104,8 @@ def t_error(t):
     t.lexer.skip(1)
 
 
+import ply.lex as lex
+
 lex.lex()
 
 
@@ -213,7 +215,7 @@ def p_empty(p):
 
 
 def p_statement_function(p):
-    'statement : FUNCTION NAME LPAREN params RPAREN LBRACE block RBRACE'
+    'expression : FUNCTION NAME LPAREN params RPAREN LBRACE block RBRACE'
     p[0] = ('function', p[2], p[4], ('block', p[7]))
 
 def p_statement_array_declare(p):
@@ -229,7 +231,7 @@ def p_statement_array_acces_update(p):
     p[0] = ("array_replace", p[1], p[3], p[6])
 
 def p_statement_function_call(p):
-    'statement : NAME LPAREN args RPAREN'
+    'expression : NAME LPAREN args RPAREN'
     p[0] = ('call', p[1], p[3])
 
 
@@ -294,9 +296,9 @@ while (s != "exit"):
             contenu = f.read()
             parsed = yacc.parse(contenu)
             evalPerso(parsed)
-            printTreeGraph(parsed)
+        #  printTreeGraph(parsed)
     else:
         parsed = yacc.parse(s)
         evalPerso(parsed)
-        printTreeGraph(parsed)
+        # printTreeGraph(parsed)
     s = input('calc > ')
