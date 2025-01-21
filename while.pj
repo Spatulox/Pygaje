@@ -1,0 +1,9 @@
+a = 1;
+while(a<5){
+    print(a);
+    a++;
+    exit;
+    if(a>5){
+        return;
+    }
+}
