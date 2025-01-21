@@ -17,7 +17,9 @@ reserved = {
    'print' : 'PRINT',
    'return' : 'RETURN',
    'function' : 'FUNCTION',
-   'exit' : "EXIT"
+   'exit' : "EXIT",
+   'break' : "BREAK",
+   'continue' : 'CONTINUE',
 }
 
 precedence = (
@@ -95,12 +97,6 @@ def t_error(t):
 
 lex.lex()
 
-# def p_block(p):
-#     '''block : statement SEMICOLON block
-#      | statement SEMICOLON
-#      | statement'''
-#     p[0] = p[1]
-
 def p_block(p):
     '''block : statement SEMICOLON block
              | statement SEMICOLON
@@ -111,7 +107,8 @@ def p_block(p):
         p[0] = ('block', p[1])
 
 def p_statement_assign(p):
-    'statement : NAME ASSIGN expression'
+    '''statement : NAME ASSIGN expression
+    | NAME ASSIGN statement'''
     p[0] = ("=", p[1], p[3])
 
 def p_statement_expr(p): 
@@ -201,11 +198,19 @@ def p_statement_return(p):
     if len(p) >2 :
         p[0] = ('return', p[2])
     else:
-        p[0]=('return')
+        p[0]=('return',)
 
 def p_statement_exit(p):
     'statement : EXIT'
-    p[0] = ('exit')
+    p[0] = ('exit',)
+
+def p_statement_break(p):
+    'statement : BREAK'
+    p[0] = ('break',)
+
+def p_statement_continue(p):
+    'statement : CONTINUE'
+    p[0] = ('continue',)
 
 def p_params(p):
     '''params : NAME COMMA params

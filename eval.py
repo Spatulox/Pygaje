@@ -39,22 +39,38 @@ def evalPerso(tupleVar):
 
         case 'if':
             if evalPerso(tupleVar[1]):
-                evalPerso(tupleVar[2])
+                result = evalPerso(tupleVar[2])
+                check = checkBreakReturn(result)
+                if check:
+                    return check
+
         case 'if-else':
             if evalPerso(tupleVar[1]):
-                evalPerso(tupleVar[2])
+                result = evalPerso(tupleVar[2])
             else:
-                evalPerso(tupleVar[3])
+                result = evalPerso(tupleVar[3])
+            check = checkBreakReturn(result)
+            if check:
+                return check
+
         case 'while':
             while evalPerso(tupleVar[1]):
-                evalPerso(tupleVar[2])
+                result = evalPerso(tupleVar[2])
+                check = checkBreakReturn(result)
+                if check:
+                    if check[0] == "break":
+                        break
+                    elif check[0] == "continue":
+                        continue
+                    elif check[0] == "return":
+                        return check
 
         case 'block':
-            if len(tupleVar) == 3:
-                evalPerso(tupleVar[1])
-                return evalPerso(tupleVar[2])
-            else:
-                return evalPerso(tupleVar[1])
+            for statement in tupleVar[1:]:
+                result = evalPerso(statement)
+                check = checkBreakReturn(result)
+                if check:
+                    return check
 
         case "=":
             variable[tupleVar[1]] = evalPerso(tupleVar[2])
@@ -79,26 +95,33 @@ def evalPerso(tupleVar):
             if len(params) != len(tupleVar[2]):
                 raise Exception(f"Function {tupleVar[1]} expected {len(params)} arguments, got {len(tupleVar[2])}.")
 
-            # old_vars = variable.copy()
-            #
-            # for param, arg in zip(params, tupleVar[2]):
-            #     variable[param] = evalPerso(arg)
-            #
-            # result = evalPerso(body)
-            #
-            # variable.clear()
-            # variable.update(old_vars)
-
             return
 
         case 'return':
             print("RETURN")
             if len(tupleVar) > 1:
-                return evalPerso(tupleVar[1])
+                return ("return", evalPerso(tupleVar[1]))
             else:
-                return
+                return ("return",)
+
+        case 'break':
+            print("BREAK")
+            return ("break",)
+
         case 'exit':
             print("EXIT")
             exit()
 
 
+def checkBreakReturn(tmp):
+    if isinstance(tmp, tuple):
+        if tmp[0] == "return":
+            if len(tmp) > 1:
+                return ("return", tmp[1])
+            else:
+                return ("return", None)
+        elif tmp[0] == "break":
+            return ("break",)
+        elif tmp[0] == "continue":
+            return ("continue",)
+    return None
