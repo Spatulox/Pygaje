@@ -6,16 +6,21 @@ Created on Tue Nov 19 08:59:32 2024
 """
 
 from eval import evalPerso
+import ply.yacc as yacc
+import ply.lex as lex
 from genereTreeGraphviz2 import printTreeGraph
 
 reserved = {
-    # 'if' : 'IF',
-    # 'then' : 'THEN',
-    # 'else' : 'ELSE',
-    # 'while' : 'WHILE',
+    'if': 'IF',
+    'else': 'ELSE',
+    'while': 'WHILE',
+    'for': 'FOR',
     'print': 'PRINT',
     'return': 'RETURN',
-    'function': 'FUNCTION'
+    'function': 'FUNCTION',
+    'exit': "EXIT",
+    'break': "BREAK",
+    'continue': 'CONTINUE',
 }
 
 precedence = (
@@ -29,25 +34,35 @@ precedence = (
 )
 
 tokens = ['NUMBER',
-          'MINUS', 'PLUS', 'TIMES', 'DIVIDE',
+          'MINUS', 'PLUS', 'TIMES', 'DIVIDE', 'POW',
           'LPAREN', 'RPAREN',
           'LBRACE', 'RBRACE',
+          'LHOOK', 'RHOOK',
           'AND', 'OR',
           'SEMICOLON',
           'NAME',
           'ASSIGN',
           'CALC',
           'SIMPLECALC',
-          'CONDITIONS', 'COMMA'] + list(reserved.values())
+          'CONDITIONS',
+          'COMMA'] + list(reserved.values())
 
 t_PLUS = r'\+'
 t_MINUS = r'-'
 t_TIMES = r'\*'
 t_DIVIDE = r'/'
+t_POW = r'\^'
 t_LPAREN = r'\('
 t_RPAREN = r'\)'
 t_LBRACE = r'\{'
 t_RBRACE = r'\}'
+t_LHOOK = r'\['
+t_RHOOK = r'\]'
+
+t_IF = r'if'
+t_ELSE = r'else'
+t_WHILE = r'while'
+
 t_COMMA = r','
 t_AND = r'&'
 t_OR = r'\|'
@@ -105,7 +120,8 @@ def p_block(p):
 
 
 def p_statement_assign(p):
-    'statement : NAME ASSIGN expression'
+    '''statement : NAME ASSIGN expression
+    | NAME ASSIGN statement'''
     p[0] = ("=", p[1], p[3])
 
 
@@ -114,13 +130,37 @@ def p_statement_expr(p):
     p[0] = p[1]
 
 
+def p_statement_if(p):
+    '''statement : IF LPAREN expression RPAREN LBRACE block RBRACE
+                 | IF LPAREN expression RPAREN LBRACE block RBRACE ELSE LBRACE block RBRACE'''
+    if len(p) == 8:
+        p[0] = ('if', p[3], p[6])
+    else:
+        p[0] = ('if-else', p[3], p[6], p[10])
+
+
+def p_statement_while(p):
+    'statement : WHILE LPAREN expression RPAREN LBRACE block RBRACE'
+    p[0] = ('while', p[3], p[6])
+
+
+def p_statement_for(p):
+    '''statement :  FOR LPAREN NAME ASSIGN NAME         SEMICOLON expression SEMICOLON block RPAREN LBRACE block RBRACE
+    |               FOR LPAREN NAME ASSIGN expression   SEMICOLON expression SEMICOLON block RPAREN LBRACE block RBRACE'''
+    p[0] = ('for', ("=", p[3], p[5]), p[7], p[9], p[12])
+    # for    int i = 1,        i<5, i++, block
+
+
 def p_statement_print(p):
     '''statement : PRINT expression'''
     p[0] = ("print", p[2])
 
 
 def p_expression_condition(p):
-    'statement : expression CONDITIONS expression'
+    '''expression : expression CONDITIONS expression
+    | expression CONDITIONS NAME
+    | NAME CONDITIONS expression
+    | NAME CONDITIONS NAME'''
     p[0] = (p[2], p[1], p[3])
 
 
@@ -149,7 +189,8 @@ def p_expression_binop(p):
     '''expression : expression PLUS expression
                   | expression MINUS expression
                   | expression TIMES expression
-                  | expression DIVIDE expression'''
+                  | expression DIVIDE expression
+                  | expression POW expression'''
     p[0] = (p[2], p[1], p[3])
 
 
@@ -177,6 +218,17 @@ def p_statement_function(p):
     'expression : FUNCTION NAME LPAREN params RPAREN LBRACE block RBRACE'
     p[0] = ('function', p[2], p[4], ('block', p[7]))
 
+def p_statement_array_declare(p):
+    'statement : NAME ASSIGN LHOOK args RHOOK'
+    p[0] = ("=", p[1], p[4])
+
+def p_statement_array_access(p):
+    'statement : NAME LHOOK expression RHOOK'
+    p[0] = ("array_access", p[1], p[3])
+
+def p_statement_array_acces_update(p):
+    'statement : NAME LHOOK NUMBER RHOOK ASSIGN expression'
+    p[0] = ("array_replace", p[1], p[3], p[6])
 
 def p_statement_function_call(p):
     'expression : NAME LPAREN args RPAREN'
@@ -189,7 +241,22 @@ def p_statement_return(p):
     if len(p) > 2:
         p[0] = ('return', p[2])
     else:
-        p[0] = ('return')
+        p[0] = ('return',)
+
+
+def p_statement_exit(p):
+    'statement : EXIT'
+    p[0] = ('exit',)
+
+
+def p_statement_break(p):
+    'statement : BREAK'
+    p[0] = ('break',)
+
+
+def p_statement_continue(p):
+    'statement : CONTINUE'
+    p[0] = ('continue',)
 
 
 def p_params(p):
@@ -220,8 +287,6 @@ def p_error(p):
     print(p)
     print("Syntax error in input!")
 
-
-import ply.yacc as yacc
 
 yacc.yacc()
 s = input('calc > ')

@@ -1,0 +1,5 @@
+function test(a){
+    print(a);
+    a++;
+    return test(a);
+}
