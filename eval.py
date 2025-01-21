@@ -3,7 +3,7 @@ functions = {}
 
 def evalPerso(tupleVar):
     #check tuplevar
-    print("tupleVar[0] =", tupleVar[0] if isinstance(tupleVar, tuple) else "Not a tuple")  # Affichage de tupleVar[0]
+   # print("tupleVar[0] =", tupleVar[0] if isinstance(tupleVar, tuple) else "Not a tuple")  # Affichage de tupleVar[0]
 
     if type(tupleVar) == int:
         return tupleVar
@@ -60,18 +60,29 @@ def evalPerso(tupleVar):
                 raise Exception(f"Function {tupleVar[1]} is not defined.")
 
             params, body = functions[tupleVar[1]]
+            # print(functions[tupleVar[1]])
+
+
             if len(params) != len(tupleVar[2]):
                 raise Exception(f"Function {tupleVar[1]} expected {len(params)} arguments, got {len(tupleVar[2])}.")
 
-            # old_vars = variable.copy()
-            #
+            old_vars = variable.copy()
+
             # for param, arg in zip(params, tupleVar[2]):
             #     variable[param] = evalPerso(arg)
-            #
-            # result = evalPerso(body)
-            #
-            # variable.clear()
-            # variable.update(old_vars)
+
+            if body[0] == "block":
+                for stmt in body[1:]:  # Exécute chaque instruction du bloc
+                    evalPerso(stmt)
+            else:
+                evalPerso(body)  # Si c'est une seule instruction, on l'exécute directement
+
+            # print(body)
+            result = evalPerso(body)
+            print(result)
+
+            variable.clear()
+            variable.update(old_vars)
 
             return
 
