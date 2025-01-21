@@ -91,7 +91,6 @@ def evalPerso(tupleVar):
                         return check
 
         case 'for':
-            print(variables)
             evalPerso(tupleVar[1])  # Initialisation
             while evalPerso(tupleVar[2]):  # Condition
                 scope += 1
