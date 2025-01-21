@@ -1,9 +1,15 @@
-a = 1;
-while(a<5){
-    print(a);
+a = 0;
+while(a<12){
     a++;
-    exit;
+    if(a==4){
+        continue;
+    };
+    if(a==4){
+        print(a);
+        break;
+    };
+    print(a);
     if(a>5){
-        return;
-    }
-}
+        return 12;
+    };
+};
