@@ -88,7 +88,6 @@ def t_error(t):
 import ply.lex as lex
 lex.lex()
 
-
 def p_block(p):
     '''bloc : statement SEMICOLON bloc
      | statement SEMICOLON
