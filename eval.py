@@ -93,9 +93,13 @@ def evalPerso(tupleVar):
             return
 
         case 'return':
+            print("RETURN")
             if len(tupleVar) > 1:
                 return evalPerso(tupleVar[1])
             else:
                 return
+        case 'exit':
+            print("EXIT")
+            exit()
 
 

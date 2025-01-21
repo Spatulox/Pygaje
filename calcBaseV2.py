@@ -16,7 +16,8 @@ reserved = {
    'while' : 'WHILE',
    'print' : 'PRINT',
    'return' : 'RETURN',
-   'function' : 'FUNCTION'
+   'function' : 'FUNCTION',
+   'exit' : "EXIT"
 }
 
 precedence = (
@@ -202,6 +203,9 @@ def p_statement_return(p):
     else:
         p[0]=('return')
 
+def p_statement_exit(p):
+    'statement : EXIT'
+    p[0] = ('exit')
 
 def p_params(p):
     '''params : NAME COMMA params
