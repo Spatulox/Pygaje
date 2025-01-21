@@ -1,9 +1,11 @@
 variable = {}
 functions = {}
+scope = 0
+
 
 def evalPerso(tupleVar):
-    #check tuplevar
-   # print("tupleVar[0] =", tupleVar[0] if isinstance(tupleVar, tuple) else "Not a tuple")  # Affichage de tupleVar[0]
+    # check tuplevar
+    # print("tupleVar[0] =", tupleVar[0] if isinstance(tupleVar, tuple) else "Not a tuple")  # Affichage de tupleVar[0]
 
     if type(tupleVar) == int:
         return tupleVar
@@ -13,8 +15,7 @@ def evalPerso(tupleVar):
             return variable[tupleVar]
         return tupleVar
 
-    print(tupleVar)
-    match(tupleVar[0]):
+    match (tupleVar[0]):
         case '*':
             return evalPerso(tupleVar[1]) * evalPerso(tupleVar[2])
         case '/':
@@ -38,7 +39,11 @@ def evalPerso(tupleVar):
             return
 
         case 'block':
-            return evalPerso(tupleVar[1])
+            for statement in tupleVar[1:]:
+                result = evalPerso(statement)
+                check = checkBreakReturn(result)
+                if check:
+                    return check
 
         case "=":
             variable[tupleVar[1]] = evalPerso(tupleVar[2])
@@ -47,12 +52,11 @@ def evalPerso(tupleVar):
 
             if tupleVar[1] not in functions:
                 functions[tupleVar[1]] = (tupleVar[2], tupleVar[3])
-                print(functions)
+
                 return f"Function {tupleVar[1]} defined."
             else:
-                print( f"Function {tupleVar[1]} already defined.")
+                print(f"Function {tupleVar[1]} already defined.")
                 exit()
-
 
         case 'call':
 
@@ -60,31 +64,30 @@ def evalPerso(tupleVar):
                 raise Exception(f"Function {tupleVar[1]} is not defined.")
 
             params, body = functions[tupleVar[1]]
-            # print(functions[tupleVar[1]])
-
 
             if len(params) != len(tupleVar[2]):
                 raise Exception(f"Function {tupleVar[1]} expected {len(params)} arguments, got {len(tupleVar[2])}.")
 
             old_vars = variable.copy()
 
-            # for param, arg in zip(params, tupleVar[2]):
-            #     variable[param] = evalPerso(arg)
+            for i in range(len(params)):
+                variable[params[i]] = tupleVar[2][i]
 
-            if body[0] == "block":
-                for stmt in body[1:]:  # Exécute chaque instruction du bloc
-                    evalPerso(stmt)
-            else:
-                evalPerso(body)  # Si c'est une seule instruction, on l'exécute directement
+            print(body)
 
-            # print(body)
             result = evalPerso(body)
-            print(result)
+            check = checkBreakReturn(result)
+            if isinstance(check, tuple) and check:
+                if check[0] == "return":
+                    return check[1]
+                elif check[0] == "break":
+                    print("Warning: 'break' used outside of a loop in a function")
+                    return None
+                else:
 
-            variable.clear()
-            variable.update(old_vars)
-
-            return
+                    print(f"Unexpected control flow: {check[0]}")
+                    return None
+            return result
 
         case 'return':
             if len(tupleVar) > 1:
@@ -92,4 +95,13 @@ def evalPerso(tupleVar):
             else:
                 return
 
-
+def checkBreakReturn(tmp):
+    if isinstance(tmp, tuple):
+        if tmp[0] == "return":
+            if len(tmp) > 1:
+                return ("return", tmp[1])
+            else:
+                return ("return", None)
+        elif tmp[0] == "break":
+            return ("break",)
+    return tmp
