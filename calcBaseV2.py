@@ -148,7 +148,7 @@ def p_statement_for(p):
     '''statement :  FOR LPAREN NAME ASSIGN NAME         SEMICOLON expression SEMICOLON block RPAREN LBRACE block RBRACE
     |               FOR LPAREN NAME ASSIGN expression   SEMICOLON expression SEMICOLON block RPAREN LBRACE block RBRACE'''
     p[0] = ('for', ("=", p[3], p[5]), p[7], p[9], p[12])
-    # for    int i = 1,        i<5, i++, block
+    # for           int i = 1,        i<5, i++, block
 
 
 def p_statement_print(p):
