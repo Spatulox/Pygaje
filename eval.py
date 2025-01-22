@@ -1,5 +1,6 @@
 variables = [{}]  # Liste de dictionnaires représentant les différents niveaux de scope
 functions = {}
+classDict = {}
 scope = 0
 
 
@@ -19,6 +20,7 @@ def evalPerso(tupleVar):
                 return current_scope[tupleVar]
         return tupleVar  # Si la variable n'est pas trouvée, retourner son nom
 
+    print(tupleVar)
     match (tupleVar[0]):
         case '*':
             return evalPerso(tupleVar[1]) * evalPerso(tupleVar[2])
@@ -131,6 +133,17 @@ def evalPerso(tupleVar):
             for current_scope in reversed(variables):
                 if array_name in current_scope:
                     current_scope[array_name][index] = value
+
+        case 'class_declaration':
+            print(tupleVar)
+            if tupleVar[1] in classDict:
+                print("This class is already declared")
+                exit(1)
+            classDict[tupleVar[1]] = (tupleVar[1])
+
+
+        case 'class_access':
+            print(tupleVar)
 
         case 'function':
             if tupleVar[1] not in functions:

@@ -16,11 +16,13 @@ reserved = {
     'while': 'WHILE',
     'for': 'FOR',
     'print': 'PRINT',
-    'return': 'RETURN',
     'function': 'FUNCTION',
+    'return': 'RETURN',
     'exit': "EXIT",
     'break': "BREAK",
     'continue': 'CONTINUE',
+    'class': 'CLASS',
+    "extend": "EXTEND"
 }
 
 precedence = (
@@ -45,7 +47,8 @@ tokens = ['NUMBER',
           'CALC',
           'SIMPLECALC',
           'CONDITIONS',
-          'COMMA'] + list(reserved.values())
+          'COMMA',
+          'POINT'] + list(reserved.values())
 
 t_PLUS = r'\+'
 t_MINUS = r'-'
@@ -64,9 +67,10 @@ t_ELSE = r'else'
 t_WHILE = r'while'
 
 t_COMMA = r','
+t_SEMICOLON = r';'
+t_POINT = r'\.'
 t_AND = r'&'
 t_OR = r'\|'
-t_SEMICOLON = r';'
 
 
 def t_ID(t):
@@ -128,7 +132,6 @@ def p_statement_assign(p):
 def p_statement_expr(p):
     'statement : expression'
     p[0] = p[1]
-
 
 def p_statement_if(p):
     '''statement : IF LPAREN expression RPAREN LBRACE block RBRACE
@@ -218,6 +221,21 @@ def p_statement_function(p):
     'expression : FUNCTION NAME LPAREN params RPAREN LBRACE block RBRACE'
     p[0] = ('function', p[2], p[4], ('block', p[7]))
 
+
+def p_statement_class_declaration(p):
+    'statement : CLASS NAME LBRACE block RBRACE'
+    p[0] = ("class_declaration", p[2], p[4])
+
+def p_statement_class_declaration_extend(p):
+    'statement : CLASS NAME EXTEND NAME LBRACE block RBRACE'
+    p[0] = ("class_declaration_extend", p[2], p[4], p[6])
+
+def p_statement_class_access(p):
+    'expression : NAME POINT expression'
+    p[0] = ("class_access", p[1], p[3])
+
+
+
 def p_statement_array_declare(p):
     'statement : NAME ASSIGN LHOOK args RHOOK'
     p[0] = ("=", p[1], p[4])
@@ -229,6 +247,7 @@ def p_statement_array_access(p):
 def p_statement_array_acces_update(p):
     'statement : NAME LHOOK NUMBER RHOOK ASSIGN expression'
     p[0] = ("array_replace", p[1], p[3], p[6])
+
 
 def p_statement_function_call(p):
     'expression : NAME LPAREN args RPAREN'
