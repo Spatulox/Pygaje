@@ -1,0 +1,25 @@
+class Coucou {
+    _construct(){
+        a=0;
+       };
+    function test(){
+        print("fonction test ok");
+    };
+    function a(){return 50;};
+};
+
+class Test extend Coucou {
+    function test2(){
+        print("fonction test2 ok");
+    };
+};
+
+function bite(){
+    return 1;
+};
+
+bite = "coucou";
+
+a = new Test();
+a.test();
+print(a.a());

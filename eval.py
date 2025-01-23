@@ -127,7 +127,8 @@ def evalPerso(tupleVar):
                     return check
 
         case "=":
-            variables[-1][tupleVar[1]] = evalPerso(tupleVar[2])
+            returnValue = evalPerso(tupleVar[2])
+            variables[-1][tupleVar[1]] = returnValue
 
         case 'array_access':
             array_name = tupleVar[1]
@@ -153,11 +154,25 @@ def evalPerso(tupleVar):
             if constructor:
                 evalPerso((constructor[0], constructor, tupleVar[1]))
 
-        # case 'class_declaration_extend':
-        #     if tupleVar[1] in classDict:
-        #         print("This extend class is already declared")
-        #         exit(1)
-        #     classDict[tupleVar[1]] = (tupleVar[1])
+        case 'class_declaration_extend':
+            if tupleVar[1] in classDict:
+                print("This extend class is already declared")
+                exit(1)
+
+            newTuple = (tupleVar[0], tupleVar[1], tupleVar[3])
+            classDict.append(save_declaration_class(newTuple))
+
+            # Copie function from parent class to child class
+            theClass = find_dict_in_list(classDict, tupleVar[1])
+            theClassToAppend = find_dict_in_list(classDict, tupleVar[2])
+            key = list(theClass.keys())[0]
+            keyOfClassToappend = list(theClassToAppend.keys())
+            for key_b in keyOfClassToappend:
+                theClass[key][1].append(theClassToAppend[key_b])
+
+            constructor = detect_constructor(newTuple)
+            if constructor:
+                evalPerso((constructor[0], constructor, tupleVar[1]))
 
         case 'class_constructor':
             constructor = tupleVar[1]
@@ -171,7 +186,7 @@ def evalPerso(tupleVar):
         case 'class_new':
             classDictFound = find_dict_in_list(classDict, tupleVar[1])
             if not classDictFound:
-                print(f"Class ${tupleVar[1]} not declared, or declare it before using it")
+                print(f"Class {tupleVar[1]} not declared, or declare it before using it")
                 exit(1)
 
             classReturn = None
@@ -182,12 +197,14 @@ def evalPerso(tupleVar):
         case 'class_access':
             var = evalPerso(tupleVar[1])
             class_name = list(var[1].keys())[0]
-
             if not isinstance(tupleVar[2], tuple) and tupleVar[2] in var[1][class_name].keys():
                 return var[1][class_name][tupleVar[2]]
             elif isinstance(tupleVar[2], tuple):
-                evalPerso(("call", tupleVar[2][1], tupleVar[2][2], tupleVar[1]))
-                return
+                result = evalPerso(("call", tupleVar[2][1], tupleVar[2][2], tupleVar[1]))
+                check = checkBreakReturn(result)
+                if check:
+                    return check
+                return result
             print("This attribute doesn't exist in this class")
             exit(1)
 
@@ -198,9 +215,12 @@ def evalPerso(tupleVar):
             exit(1)
 
         case 'function':
-            if tupleVar[1] not in functions:
+            if tupleVar[1] not in functions: #and tupleVar[1] not in list(find_dict_in_list(variables, tupleVar[1]).keys()):
                 functions[tupleVar[1]] = (tupleVar[2], tupleVar[3])
                 return f"Function {tupleVar[1]} defined."
+            elif find_dict_in_list(variables, tupleVar[1]):
+                print(f"A variable have the same name as the function '{tupleVar[1]}'")
+                exit()
             else:
                 print(f"Function {tupleVar[1]} already defined.")
                 exit()
@@ -243,7 +263,6 @@ def evalPerso(tupleVar):
             if len(tupleVar) > 3:
                 for var in theClass[key]:
                     theClass[key][var] = variables[-1][var]
-
             exitScope()
             if check:
                 while isinstance(check, tuple) and check and check[0] == "return":
@@ -338,10 +357,9 @@ def save_declaration_class(input_data):
 
 
 def executeConstructor(dict, name, args):
-    constructor = dict["constructor"]
+    constructor = dict.get("constructor")
     if not constructor or len(constructor) < 3:
-        print("INVALID CONSTRUCTOR")
-        exit(1)
+        return ("class", {name: {}})
 
     constructor_params = constructor[1]
     constructor_body = constructor[2]

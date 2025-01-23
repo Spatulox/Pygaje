@@ -1,0 +1,4 @@
+POO :
+- Aucun moyen de renvoyer une variable du parent vers l'enfant
+    Il faut détecter l'utilisation d'une méthode du parent
+    Executer le constructeur du parent (init les var) et les enregistrer dans l'enfant
