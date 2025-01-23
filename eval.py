@@ -21,9 +21,9 @@ def evalPerso(tupleVar):
             if tupleVar in current_scope:
                 return current_scope[tupleVar]
 
-            if not '"' in tupleVar:
-                print("erreur")
-                exit(1)
+            # if not '"' in tupleVar:
+            #     print("erreur")
+            #     exit(1)
         return ("string", tupleVar)
 
     # print(tupleVar)
@@ -61,7 +61,9 @@ def evalPerso(tupleVar):
                 return left != right
 
         case 'string':
-            value = tupleVar[1][1:-1]
+            value = tupleVar[1]
+            if '"' in value or "'" in value:
+                value = tupleVar[1][1:-1]
             return value
 
         case 'print':
@@ -126,8 +128,7 @@ def evalPerso(tupleVar):
                     return check
 
         case "=":
-            returnValue = evalPerso(tupleVar[2])
-            variables[-1][tupleVar[1]] = returnValue
+            variables[-1][tupleVar[1]] = evalPerso(tupleVar[2])
 
         case 'array_access':
             array_name = tupleVar[1]
@@ -183,8 +184,11 @@ def evalPerso(tupleVar):
             var = evalPerso(tupleVar[1])
             class_name = list(var[1].keys())[0]
 
-            if tupleVar[2] in var[1][class_name].keys():
+            if not isinstance(tupleVar[2], tuple) and tupleVar[2] in var[1][class_name].keys():
                 return var[1][class_name][tupleVar[2]]
+            elif isinstance(tupleVar[2], tuple):
+                evalPerso(("call", tupleVar[2][1], tupleVar[2][2], tupleVar[1]))
+                return
             print("This attribute doesn't exist in this class")
             exit(1)
 
@@ -204,21 +208,43 @@ def evalPerso(tupleVar):
 
         case 'call':
             enterScope()
-            if tupleVar[1] not in functions:
+            params, body = 0, 0
+            theClass, key = 0, 0
+            if tupleVar[1] not in functions and len(tupleVar) == 3:
                 print(f"Function {tupleVar[1]} is not defined.")
                 exit(1)
-
-            params, body = functions[tupleVar[1]]
+            elif len(tupleVar) > 3:
+                # par du dernier élément du tuple, pour retrouver la bonne méthode de classe correspondant
+                theClass = evalPerso(tupleVar[3])[1]
+                key = list(theClass.keys())[0]
+                theFunction = find_dict_in_list(find_dict_in_list(classDict, key)[key][1], tupleVar[1])
+                try:
+                    params, body = theFunction[tupleVar[1]]
+                except:
+                    print(f"Function '{tupleVar[1]}' is not a method of the class '{key}'.")
+                    exit(1)
+                # Mise en scope des variables de la classe
+                for var in theClass[key]:
+                    variables[-1][var] = theClass[key][var]
+            else:
+                params, body = functions[tupleVar[1]]
 
             if len(params) != len(tupleVar[2]):
                 print(f"Function {tupleVar[1]} expected {len(params)} arguments, got {len(tupleVar[2])}.")
                 exit(1)
 
             for i in range(len(params)):
-                variables[-1][params[i]] = evalPerso(tupleVar[2][i])
+                if params[i] != []:
+                    variables[-1][params[i]] = evalPerso(tupleVar[2][i])
 
             result = evalPerso(body)
             check = checkBreakReturn(result)
+
+            # Si la fonction est une méthode de classe
+            if len(tupleVar) > 3:
+                for var in theClass[key]:
+                    theClass[key][var] = variables[-1][var]
+
             exitScope()
             if check:
                 while isinstance(check, tuple) and check and check[0] == "return":
@@ -322,24 +348,22 @@ def executeConstructor(dict, name, args):
     constructor_body = constructor[2]
 
     enterScope()
-    classVarTmp = [{}]
+    # Dictionnaire pour { param : valeur, param2 : valeur2}
+    # Doit être fait car le "evalPerso()" va devoir faire des calculs avec le paramètre "param"
     for param, arg in zip(constructor_params, args):
-        classVarTmp[-1][param] = arg
+        variables[-1][param] = arg
 
     if isinstance(constructor_body, tuple) and constructor_body[0] == 'block':
         for statement in constructor_body[1:]:
             evalPerso(statement)
 
-    construct_scope = variables[-1]
-
-    for var_name in construct_scope:
-        for var in classVarTmp:
-            key = list(var.keys())[0]
-            valeur = var[key]
-            if construct_scope[var_name] == key:
-                construct_scope[var_name] = valeur
-
     tmp = copy.deepcopy(variables[-1])
+
+    # Les params du constructeur sont supprimé pour éviter d'avoir des fausses valeur et des trucs useless dans le dico
+    for var, value in list(tmp.items()):
+        if var in constructor_params:
+            del tmp[var]
+
     exitScope()
     return ("class", {name: tmp})
 
