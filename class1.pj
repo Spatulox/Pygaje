@@ -2,15 +2,16 @@ class Coucou {
     _construct(param1){
         a=param1;
         b=2;
-        c="coucoutest"
+        c="coucoutest";
+        d = param1+2;
     };
     function test(){
-        print(1);
+        print("fonction test ok");
+        a=2;
     };
 };
 
 a = new Coucou(1);
 print(a.a);
-print(a.b);
-print(a.c);
-print(a.d);
+a.test();
+print(a.a);
