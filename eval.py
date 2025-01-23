@@ -1,6 +1,10 @@
+import copy
+
 variables = [{}]  # Liste de dictionnaires représentant les différents niveaux de scope
 functions = {}
-classDict = {}
+classDict = []
+classVar = []
+# classVarTmp = [{}]
 scope = 0
 
 
@@ -20,7 +24,7 @@ def evalPerso(tupleVar):
                 return current_scope[tupleVar]
         return tupleVar  # Si la variable n'est pas trouvée, retourner son nom
 
-    print(tupleVar)
+    # print(tupleVar)
     match (tupleVar[0]):
         case '*':
             return evalPerso(tupleVar[1]) * evalPerso(tupleVar[2])
@@ -135,12 +139,39 @@ def evalPerso(tupleVar):
                     current_scope[array_name][index] = value
 
         case 'class_declaration':
-            print(tupleVar)
             if tupleVar[1] in classDict:
                 print("This class is already declared")
                 exit(1)
-            classDict[tupleVar[1]] = (tupleVar[1])
+            classDict.append(save_declaration_class(tupleVar))
+            constructor = detect_constructor(tupleVar)
+            if constructor:
+                evalPerso((constructor[0], constructor, tupleVar[1]))
 
+        # case 'class_declaration_extend':
+        #     if tupleVar[1] in classDict:
+        #         print("This extend class is already declared")
+        #         exit(1)
+        #     classDict[tupleVar[1]] = (tupleVar[1])
+
+        case 'class_constructor':
+            constructor = tupleVar[1]
+            name = tupleVar[2]
+            classDictFound = find_dict_in_list(classDict, name)
+            if not classDictFound:
+                print("Can't use a dict outside a class")
+                exit(1)
+            classDictFound["constructor"] = constructor
+
+        case 'class_new':
+            #print(tupleVar)
+            classDictFound = find_dict_in_list(classDict, tupleVar[1])
+            if not classDictFound:
+                print("Class not declared, or declare it before using it")
+                exit(1)
+            if len(tupleVar[2]) > 0:
+                value = executeConstructor(copy.deepcopy(classDictFound), tupleVar[1], tupleVar[2])
+
+            return ("class", value)
 
         case 'class_access':
             print(tupleVar)
@@ -192,19 +223,26 @@ def evalPerso(tupleVar):
             return ("continue",)
 
         case 'exit':
-            print(variables)
             exit()
+
+        case 'debug':
+            print(variables)
+            print(functions)
+            print(classDict)
+            print(classVar)
 
 
 def enterScope():
-    global variables, scope
+    global variables, classVar, scope
     variables.append({})
+    classVar.append({})
     scope += 1
 
 
 def exitScope():
-    global variables, scope
+    global variables, classVar, scope
     variables.pop()
+    classVar.pop()
     scope -= 1
 
 
@@ -220,3 +258,82 @@ def checkBreakReturn(tmp):
         elif tmp[0] == "continue":
             return ("continue",)
     return None
+
+def find_dict_in_list(data, keyword):
+    if isinstance(data, list):
+        for item in data:
+            result = find_dict_in_list(item, keyword)
+            if result:
+                return result
+    elif isinstance(data, dict):
+        if keyword in data:
+            return data
+    return None
+
+def save_declaration_class(input_data):
+    class_name = input_data[1]
+    class_body = input_data[2][1:]  # Ignorer le premier élément 'block'
+
+    internVariables = []
+    functions = []
+    def process_block(block):
+        for item in block:
+            if isinstance(item, tuple):
+                if item[0] == 'function':
+                    function_name = item[1]
+                    function_params = item[2]
+                    function_body = item[3]
+                    functions.append({function_name: (function_params, function_body)})
+                elif item[0] == 'block':
+                    process_block(item[1:])
+            elif isinstance(item, str):
+                internVariables.append({item: None})
+
+    process_block(class_body)
+
+    return {class_name: [internVariables, functions]}
+
+def executeConstructor(dict, name, args):
+    global classVar
+    constructor = dict["constructor"]
+    if not constructor or len(constructor) < 3:
+        print("INVALID CONSTRUCTOR")
+        exit(1)
+
+    constructor_params = constructor[1]
+    constructor_body = constructor[2]
+
+    enterScope()
+    classVarTmp = [{}]
+    for param, arg in zip(constructor_params, args):
+        classVarTmp[-1][param] = arg
+
+    if isinstance(constructor_body, tuple) and constructor_body[0] == 'block':
+        for statement in constructor_body[1:]:
+            evalPerso(statement)
+
+    construct_scope = variables[-1]
+
+    for var_name in construct_scope:
+        for var in classVarTmp:
+            key = list(var.keys())[0]
+            valeur = var[key]
+            if construct_scope[var_name] == key:
+                construct_scope[var_name] = valeur
+
+    tmp = copy.deepcopy(variables[-1])
+    exitScope()
+    classVar.append((name, tmp))
+
+def detect_constructor(input_data):
+    def search_constructor(item):
+        if isinstance(item, tuple):
+            if item[0] == 'class_constructor':
+                return item
+            for sub_item in item:
+                result = search_constructor(sub_item)
+                if result:
+                    return result
+        return None
+
+    return search_constructor(input_data)

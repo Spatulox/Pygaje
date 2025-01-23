@@ -22,7 +22,10 @@ reserved = {
     'break': "BREAK",
     'continue': 'CONTINUE',
     'class': 'CLASS',
-    "extend": "EXTEND"
+    "extend": "EXTEND",
+    'new': 'NEW',
+    '_construct': 'CONSTRUCT',
+    'debug': 'DEBUG'
 }
 
 precedence = (
@@ -133,6 +136,7 @@ def p_statement_expr(p):
     'statement : expression'
     p[0] = p[1]
 
+
 def p_statement_if(p):
     '''statement : IF LPAREN expression RPAREN LBRACE block RBRACE
                  | IF LPAREN expression RPAREN LBRACE block RBRACE ELSE LBRACE block RBRACE'''
@@ -217,7 +221,7 @@ def p_empty(p):
     p[0] = []
 
 
-def p_statement_function(p):
+def p_expression_function(p):
     'expression : FUNCTION NAME LPAREN params RPAREN LBRACE block RBRACE'
     p[0] = ('function', p[2], p[4], ('block', p[7]))
 
@@ -226,23 +230,37 @@ def p_statement_class_declaration(p):
     'statement : CLASS NAME LBRACE block RBRACE'
     p[0] = ("class_declaration", p[2], p[4])
 
+
 def p_statement_class_declaration_extend(p):
     'statement : CLASS NAME EXTEND NAME LBRACE block RBRACE'
     p[0] = ("class_declaration_extend", p[2], p[4], p[6])
 
-def p_statement_class_access(p):
+
+def p_expression_class_new(p):
+    'expression : NEW NAME LPAREN args RPAREN'
+    print(p[4])
+    p[0] = ("class_new", p[2], p[4])
+
+
+def p_expression_class_construct(p):
+    'expression : CONSTRUCT LPAREN params RPAREN LBRACE block RBRACE'
+    p[0] = ("class_constructor", p[3], p[6])
+
+
+def p_expression_class_access(p):
     'expression : NAME POINT expression'
     p[0] = ("class_access", p[1], p[3])
-
 
 
 def p_statement_array_declare(p):
     'statement : NAME ASSIGN LHOOK args RHOOK'
     p[0] = ("=", p[1], p[4])
 
+
 def p_statement_array_access(p):
     'statement : NAME LHOOK expression RHOOK'
     p[0] = ("array_access", p[1], p[3])
+
 
 def p_statement_array_acces_update(p):
     'statement : NAME LHOOK NUMBER RHOOK ASSIGN expression'
@@ -276,6 +294,10 @@ def p_statement_break(p):
 def p_statement_continue(p):
     'statement : CONTINUE'
     p[0] = ('continue',)
+
+def p_statement_debug(p):
+    'statement : DEBUG'
+    p[0] = ('debug',)
 
 
 def p_params(p):
