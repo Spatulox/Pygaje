@@ -227,7 +227,7 @@ def p_empty(p):
 
 def p_expression_function(p):
     'expression : FUNCTION NAME LPAREN params RPAREN LBRACE block RBRACE'
-    p[0] = ('function', p[2], p[4], ('block', p[7]))
+    p[0] = ('function', p[2], p[4], p[7])
 
 
 def p_statement_class_declaration(p):
@@ -340,9 +340,9 @@ while (s != "exit"):
             contenu = f.read()
             parsed = yacc.parse(contenu)
             evalPerso(parsed)
-        printTreeGraph(parsed)
+        #printTreeGraph(parsed)
     else:
         parsed = yacc.parse(s)
         evalPerso(parsed)
-        printTreeGraph(parsed)
+        #printTreeGraph(parsed)
     s = input('calc > ')
