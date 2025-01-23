@@ -1,6 +1,6 @@
 import copy
 
-variables = [{}]  # Liste de dictionnaires représentant les différents niveaux de scope
+variables = [{}]
 functions = {}
 classDict = []
 scope = 0
@@ -20,6 +20,10 @@ def evalPerso(tupleVar):
         for current_scope in reversed(variables):
             if tupleVar in current_scope:
                 return current_scope[tupleVar]
+
+            if not '"' in tupleVar:
+                print("erreur")
+                exit(1)
         return ("string", tupleVar)
 
     # print(tupleVar)
@@ -55,6 +59,10 @@ def evalPerso(tupleVar):
                 return left < right
             elif op == '!=':
                 return left != right
+
+        case 'string':
+            value = tupleVar[1][1:-1]
+            return value
 
         case 'print':
             print(evalPerso(tupleVar[1]))
@@ -265,86 +273,3 @@ def checkBreakReturn(tmp):
         elif tmp[0] == "continue":
             return ("continue",)
     return None
-
-
-def find_dict_in_list(data, keyword):
-    if isinstance(data, list):
-        for item in data:
-            result = find_dict_in_list(item, keyword)
-            if result:
-                return result
-    elif isinstance(data, dict):
-        if keyword in data:
-            return data
-    return None
-
-
-def save_declaration_class(input_data):
-    class_name = input_data[1]
-    class_body = input_data[2][1:]  # Ignorer le premier élément 'block'
-
-    internVariables = []
-    functions = []
-
-    def process_block(block):
-        for item in block:
-            if isinstance(item, tuple):
-                if item[0] == 'function':
-                    function_name = item[1]
-                    function_params = item[2]
-                    function_body = item[3]
-                    functions.append({function_name: (function_params, function_body)})
-                elif item[0] == 'block':
-                    process_block(item[1:])
-            elif isinstance(item, str):
-                internVariables.append({item: None})
-
-    process_block(class_body)
-
-    return {class_name: [internVariables, functions]}
-
-
-def executeConstructor(dict, name, args):
-    constructor = dict["constructor"]
-    if not constructor or len(constructor) < 3:
-        print("INVALID CONSTRUCTOR")
-        exit(1)
-
-    constructor_params = constructor[1]
-    constructor_body = constructor[2]
-
-    enterScope()
-    classVarTmp = [{}]
-    for param, arg in zip(constructor_params, args):
-        classVarTmp[-1][param] = arg
-
-    if isinstance(constructor_body, tuple) and constructor_body[0] == 'block':
-        for statement in constructor_body[1:]:
-            evalPerso(statement)
-
-    construct_scope = variables[-1]
-
-    for var_name in construct_scope:
-        for var in classVarTmp:
-            key = list(var.keys())[0]
-            valeur = var[key]
-            if construct_scope[var_name] == key:
-                construct_scope[var_name] = valeur
-
-    tmp = copy.deepcopy(variables[-1])
-    exitScope()
-    return ("class", {name: tmp})
-
-
-def detect_constructor(input_data):
-    def search_constructor(item):
-        if isinstance(item, tuple):
-            if item[0] == 'class_constructor':
-                return item
-            for sub_item in item:
-                result = search_constructor(sub_item)
-                if result:
-                    return result
-        return None
-
-    return search_constructor(input_data)

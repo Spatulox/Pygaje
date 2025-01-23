@@ -38,7 +38,7 @@ precedence = (
     ('right', 'SIMPLECALC'),
 )
 
-tokens = ['NUMBER','STRING',
+tokens = ['NUMBER', 'STRING',
           'MINUS', 'PLUS', 'TIMES', 'DIVIDE', 'POW',
           'LPAREN', 'RPAREN',
           'LBRACE', 'RBRACE',
@@ -74,6 +74,7 @@ t_SEMICOLON = r';'
 t_POINT = r'\.'
 t_AND = r'&'
 t_OR = r'\|'
+t_STRING = r'"([^"\\]|\\.)*"'
 
 
 def t_ID(t):
@@ -83,8 +84,6 @@ def t_ID(t):
 
 
 t_ASSIGN = r'='
-
-t_PRINT = r'print'
 
 t_CONDITIONS = r'(==|<=|<|>=|>|!=)'
 
@@ -217,8 +216,8 @@ def p_expression_name(p):
 
 
 def p_expression_string(p):
-    'expression : MARK STRING MARK'
-    p[0] = p[1]
+    'expression : STRING'
+    p[0] = ("string", p[1])
 
 
 def p_empty(p):
@@ -341,9 +340,9 @@ while (s != "exit"):
             contenu = f.read()
             parsed = yacc.parse(contenu)
             evalPerso(parsed)
-        #  printTreeGraph(parsed)
+        printTreeGraph(parsed)
     else:
         parsed = yacc.parse(s)
         evalPerso(parsed)
-        # printTreeGraph(parsed)
+        printTreeGraph(parsed)
     s = input('calc > ')
