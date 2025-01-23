@@ -1,0 +1,14 @@
+class Coucou {
+    _construct(param1){
+        a=param1;
+        b=2;
+    };
+    function test(){
+        print(1);
+    };
+};
+
+a = new Coucou(1);
+print(a.a);
+print(a.b);
+print(a.c);

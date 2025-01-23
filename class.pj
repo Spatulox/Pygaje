@@ -1,0 +1,19 @@
+class Coucou {
+    a;
+    _construct(param1){
+        a=param1;
+    };
+    function test(){
+        print(1);
+    };
+};
+
+class Coucou2 extend Coucou {
+    a=1;
+    b=2;
+    function test(){
+        print(1);
+    };
+};
+
+a = new Coucou()
