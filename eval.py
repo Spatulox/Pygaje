@@ -21,9 +21,9 @@ def evalPerso(tupleVar):
             if tupleVar in current_scope:
                 return current_scope[tupleVar]
 
-            if not '"' in tupleVar:
-                print("erreur")
-                exit(1)
+            # if not '"' in tupleVar:
+            #     print("erreur")
+            #     exit(1)
         return ("string", tupleVar)
 
     # print(tupleVar)
@@ -61,7 +61,9 @@ def evalPerso(tupleVar):
                 return left != right
 
         case 'string':
-            value = tupleVar[1][1:-1]
+            value = tupleVar[1]
+            if '"' in value or "'" in value:
+                value = tupleVar[1][1:-1]
             return value
 
         case 'print':
@@ -322,22 +324,14 @@ def executeConstructor(dict, name, args):
     constructor_body = constructor[2]
 
     enterScope()
-    classVarTmp = [{}]
+    # Dictionnaire pour { param : valeur, param2 : valeur2}
+    # Doit être fait car le "evalPerso()" va devoir faire des calculs avec le paramètre "param"
     for param, arg in zip(constructor_params, args):
-        classVarTmp[-1][param] = arg
+        variables[-1][param] = arg
 
     if isinstance(constructor_body, tuple) and constructor_body[0] == 'block':
         for statement in constructor_body[1:]:
             evalPerso(statement)
-
-    construct_scope = variables[-1]
-
-    for var_name in construct_scope:
-        for var in classVarTmp:
-            key = list(var.keys())[0]
-            valeur = var[key]
-            if construct_scope[var_name] == key:
-                construct_scope[var_name] = valeur
 
     tmp = copy.deepcopy(variables[-1])
     exitScope()
