@@ -20,10 +20,9 @@ def evalPerso(tupleVar):
         for current_scope in reversed(variables):
             if tupleVar in current_scope:
                 return current_scope[tupleVar]
-
-            # if not '"' in tupleVar:
-            #     print("erreur")
-            #     exit(1)
+        if not '"' in tupleVar:
+            print(f"Variable {tupleVar} isn't declared")
+            exit(1)
         return ("string", tupleVar)
 
     # print(tupleVar)
