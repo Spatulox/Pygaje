@@ -238,7 +238,6 @@ def p_statement_class_declaration_extend(p):
 
 def p_expression_class_new(p):
     'expression : NEW NAME LPAREN args RPAREN'
-    print(p[4])
     p[0] = ("class_new", p[2], p[4])
 
 
