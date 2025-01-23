@@ -16,11 +16,11 @@ def evalPerso(tupleVar):
         return tupleVar
 
     if isinstance(tupleVar, str):
-        # Rechercher la variable dans les scopes, du plus récent au plus ancien
+
         for current_scope in reversed(variables):
             if tupleVar in current_scope:
                 return current_scope[tupleVar]
-        return tupleVar  # Si la variable n'est pas trouvée, retourner son nom
+        return ("string", tupleVar)
 
     # print(tupleVar)
     match (tupleVar[0]):

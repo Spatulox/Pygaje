@@ -38,7 +38,7 @@ precedence = (
     ('right', 'SIMPLECALC'),
 )
 
-tokens = ['NUMBER',
+tokens = ['NUMBER','STRING',
           'MINUS', 'PLUS', 'TIMES', 'DIVIDE', 'POW',
           'LPAREN', 'RPAREN',
           'LBRACE', 'RBRACE',
@@ -213,6 +213,11 @@ def p_expression_number(p):
 
 def p_expression_name(p):
     'expression : NAME'
+    p[0] = p[1]
+
+
+def p_expression_string(p):
+    'expression : MARK STRING MARK'
     p[0] = p[1]
 
 
