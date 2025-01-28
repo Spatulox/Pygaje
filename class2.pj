@@ -14,11 +14,11 @@ class Test extend Coucou {
     };
 };
 
-function bite(){
+function c(){
     return 1;
 };
 
-bite = "coucou";
+hg = "coucou";
 a = 12;
 b = new Test();
 b.test();
