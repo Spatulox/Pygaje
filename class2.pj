@@ -1,0 +1,25 @@
+class Coucou {
+    function test(){
+        print("fonction test ok");
+    };
+    function a(){return 50;};
+};
+
+class Test extend Coucou {
+    _construct(){
+        print(a);
+    };
+    function test2(){
+        print("fonction test2 ok");
+    };
+};
+
+function c(){
+    return 1;
+};
+
+hg = "coucou";
+a = 12;
+b = new Test();
+b.test();
+print(b.a());
