@@ -435,7 +435,7 @@ def executeConstructor(dict, name, args):
     # Dictionnaire pour { param : valeur, param2 : valeur2}
     # Doit être fait car le "evalPerso()" va devoir faire des calculs avec le paramètre "param"
 
-    if not all(len(param) == 0 for param in constructor_params) and not all(len(arg) == 0 for arg in args):
+    if constructor_params != [[]] and args != [[]] :
         for param, arg in zip(constructor_params, args):
             variables[-1][param] = arg
     elif constructor_params == [[]] and args == [[]]:
