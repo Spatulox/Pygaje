@@ -1,5 +1,7 @@
 import copy
 
+from ply import yacc
+
 variables = [{}]
 functions = {}
 classDict = []
@@ -337,7 +339,23 @@ def evalPerso(tupleVar):
             return value
 
         case 'import':
-            print("IMPORT")
+            s = evalPerso(evalPerso(tupleVar[1])) # renvoie un tuple, qu'après je reparsed pour renvoyer que la valeur du string
+
+            if not s.startswith("./") and not s.startswith("../"):
+                s = f'./{s}'
+            if not s.endswith(".pj"):
+                s += ".pj"
+            try:
+                with open(s, 'r') as f:
+                    contenu = f.read()
+                    parsed = yacc.parse(contenu)
+                    evalPerso(parsed)
+            except FileNotFoundError:
+                print(f"Erreur : Le fichier '{s}' n'a pas été trouvé.")
+                exit(1)
+            except Exception as e:
+                print(f"Erreur lors de l'importation de '{s}': {str(e)}")
+                exit(1)
 
         case 'return':
             if len(tupleVar) > 1:
