@@ -1,4 +1,7 @@
 class Coucou {
+    _construct(){
+        a=0;
+    };
     function test(){
         print("fonction test ok");
     };

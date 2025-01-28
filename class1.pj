@@ -1,4 +1,4 @@
-class Coucou {
+class CoucouClass1 {
     _construct(param1){
         a=param1;
         b=2;
@@ -11,7 +11,7 @@ class Coucou {
     };
 };
 
-a = new Coucou(1);
+a = new CoucouClass1(1);
 print(a.a);
 a.test();
 print(a.a);
