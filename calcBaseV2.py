@@ -25,7 +25,8 @@ reserved = {
     "extend": "EXTEND",
     'new': 'NEW',
     '_construct': 'CONSTRUCT',
-    'debug': 'DEBUG'
+    'debug': 'DEBUG',
+    "import": 'IMPORT'
 }
 
 precedence = (
@@ -130,6 +131,9 @@ def p_statement_assign(p):
     | NAME ASSIGN statement'''
     p[0] = ("=", p[1], p[3])
 
+def p_statement_import(p):
+    'statement : IMPORT STRING'
+    p[0] = ("import", p[3])
 
 def p_statement_expr(p):
     'statement : expression'
@@ -298,6 +302,7 @@ def p_statement_continue(p):
     'statement : CONTINUE'
     p[0] = ('continue',)
 
+
 def p_statement_debug(p):
     'statement : DEBUG'
     p[0] = ('debug',)
@@ -340,9 +345,9 @@ while (s != "exit"):
             contenu = f.read()
             parsed = yacc.parse(contenu)
             evalPerso(parsed)
-        #printTreeGraph(parsed)
+        # printTreeGraph(parsed)
     else:
         parsed = yacc.parse(s)
         evalPerso(parsed)
-        #printTreeGraph(parsed)
+        # printTreeGraph(parsed)
     s = input('calc > ')
