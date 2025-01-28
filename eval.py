@@ -160,16 +160,19 @@ def evalPerso(tupleVar):
                 exit(1)
 
             newTuple = (tupleVar[0], tupleVar[1], tupleVar[3])
-            classDict.append(save_declaration_class(newTuple))
+            dictPerso = save_declaration_class(newTuple)
+            dictPerso["extend"] = tupleVar[2]
+            classDict.append(dictPerso)
 
             # Copie function from parent class to child class
             theClass = find_dict_in_list(classDict, tupleVar[1])
             theClassToAppend = find_dict_in_list(classDict, tupleVar[2])
             key = list(theClass.keys())[0]
-            keyOfClassToappend = list(theClassToAppend.keys())
-            for key_b in keyOfClassToappend:
+            keyOfClassToAppend = list(theClassToAppend.keys())
+            for key_b in keyOfClassToAppend:
                 theClass[key][1].append(theClassToAppend[key_b])
 
+            # On evalue le constructeur pour remplacer les variables, etc..
             constructor = detect_constructor(newTuple)
             if constructor:
                 evalPerso((constructor[0], constructor, tupleVar[1]))
@@ -184,14 +187,42 @@ def evalPerso(tupleVar):
             classDictFound["constructor"] = constructor
 
         case 'class_new':
-            classDictFound = find_dict_in_list(classDict, tupleVar[1])
+            className = tupleVar[1]
+            args = tupleVar[2]
+            classDictFound = find_dict_in_list(classDict, className)
             if not classDictFound:
-                print(f"Class {tupleVar[1]} not declared, or declare it before using it")
+                print(f"Class {className} not declared, or declare it before using it")
                 exit(1)
 
             classReturn = None
+
+            parent = classDictFound.get("extend")
+            varParent = None
+            if parent:
+                classParentDictFound = find_dict_in_list(classDict, parent)
+                if classParentDictFound:
+                    classReturn = executeConstructor(copy.deepcopy(classParentDictFound), parent, args)
+                else:
+                    print("NO CONSTRUCTOR")
+                varParent = classReturn[1].get(parent)
+
+                enterScope()
+                for var in varParent:
+                    variables[-1][var] = varParent[var]
+
             if len(tupleVar[2]) > 0:
-                classReturn = executeConstructor(copy.deepcopy(classDictFound), tupleVar[1], tupleVar[2])
+                classReturn = executeConstructor(copy.deepcopy(classDictFound), className, args)
+
+            if parent:
+                # Enregistre les variables "parent" dans l'endroit des variable de la classe enfant, SAUF si elles existe déjà
+                child_vars = classReturn[1].get(className)
+
+                for var, value in varParent.items():
+                    if var not in child_vars:
+                        child_vars[var] = value
+                classReturn[1][className] = child_vars
+                exitScope()
+
             return classReturn
 
         case 'class_access':
@@ -367,8 +398,18 @@ def executeConstructor(dict, name, args):
     enterScope()
     # Dictionnaire pour { param : valeur, param2 : valeur2}
     # Doit être fait car le "evalPerso()" va devoir faire des calculs avec le paramètre "param"
-    for param, arg in zip(constructor_params, args):
-        variables[-1][param] = arg
+
+    if not all(len(param) == 0 for param in constructor_params) and not all(len(arg) == 0 for arg in args):
+        for param, arg in zip(constructor_params, args):
+            variables[-1][param] = arg
+    elif constructor_params == [[]] and args == [[]]:
+        pass
+    else:
+        if len(constructor_params) != len(args):
+            print("Le nomre d'argument attendu ne correspond pas au nombre d'argument donné")
+            exit(1)
+        print("Erreur de class inconnu")
+        exit(1)
 
     if isinstance(constructor_body, tuple) and constructor_body[0] == 'block':
         for statement in constructor_body[1:]:

@@ -9,6 +9,9 @@ class Coucou {
 };
 
 class Test extend Coucou {
+    _construct(){
+        print(a);
+    };
     function test2(){
         print("fonction test2 ok");
     };
