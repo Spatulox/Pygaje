@@ -4,10 +4,11 @@ variables = [{}]
 functions = {}
 classDict = []
 scope = 0
+definingParentClass = False
 
 
 def evalPerso(tupleVar):
-    global scope
+    global scope, definingParentClass
 
     if isinstance(tupleVar, (int, float)):
         return tupleVar
@@ -17,11 +18,20 @@ def evalPerso(tupleVar):
 
     if isinstance(tupleVar, str):
 
-        for current_scope in reversed(variables):
+        if definingParentClass:
+            # Limite la recherche aux deux derniers éléments
+            scopes_to_search = variables[-2:] if len(variables) > 1 else variables
+        else:
+            scopes_to_search = variables
+
+        for current_scope in reversed(scopes_to_search):
             if tupleVar in current_scope:
                 return current_scope[tupleVar]
         if not '"' in tupleVar:
-            print(f"Variable {tupleVar} isn't declared")
+            if definingParentClass:
+                print(f"Variable '{tupleVar}' isn't declared in the class or in the parent class")
+                exit(1)
+            print(f"Variable '{tupleVar}' isn't declared")
             exit(1)
         return ("string", tupleVar)
 
@@ -187,6 +197,7 @@ def evalPerso(tupleVar):
             classDictFound["constructor"] = constructor
 
         case 'class_new':
+
             className = tupleVar[1]
             args = tupleVar[2]
             classDictFound = find_dict_in_list(classDict, className)
@@ -199,6 +210,7 @@ def evalPerso(tupleVar):
             parent = classDictFound.get("extend")
             varParent = None
             if parent:
+                definingParentClass = True
                 classParentDictFound = find_dict_in_list(classDict, parent)
                 if classParentDictFound:
                     classReturn = executeConstructor(copy.deepcopy(classParentDictFound), parent, args)
@@ -222,6 +234,7 @@ def evalPerso(tupleVar):
                         child_vars[var] = value
                 classReturn[1][className] = child_vars
                 exitScope()
+                definingParentClass = False
 
             return classReturn
 
