@@ -25,7 +25,8 @@ reserved = {
     "extend": "EXTEND",
     'new': 'NEW',
     '_construct': 'CONSTRUCT',
-    'debug': 'DEBUG'
+    'debug': 'DEBUG',
+    "import": 'IMPORT'
 }
 
 precedence = (
@@ -298,10 +299,20 @@ def p_statement_continue(p):
     'statement : CONTINUE'
     p[0] = ('continue',)
 
+
 def p_statement_debug(p):
     'statement : DEBUG'
     p[0] = ('debug',)
 
+
+def p_statement_import(p):
+    '''statement : IMPORT stringname'''
+    p[0] = ("import", p[2])
+
+def p_stringname(p):
+    '''stringname : NAME
+    | STRING'''
+    p[0] = p[1]
 
 def p_params(p):
     '''params : NAME COMMA params
@@ -340,9 +351,9 @@ while (s != "exit"):
             contenu = f.read()
             parsed = yacc.parse(contenu)
             evalPerso(parsed)
-        #printTreeGraph(parsed)
+        # printTreeGraph(parsed)
     else:
         parsed = yacc.parse(s)
         evalPerso(parsed)
-        #printTreeGraph(parsed)
+        # printTreeGraph(parsed)
     s = input('calc > ')
