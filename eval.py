@@ -37,6 +37,9 @@ def evalPerso(tupleVar):
 
     # print(tupleVar)
     match (tupleVar[0]):
+
+        # -------------------- Calcul --------------------
+
         case '*':
             return evalPerso(tupleVar[1]) * evalPerso(tupleVar[2])
         case '^':
@@ -51,6 +54,8 @@ def evalPerso(tupleVar):
             return evalPerso(tupleVar[1]) - evalPerso(tupleVar[2])
         case '+':
             return evalPerso(tupleVar[1]) + evalPerso(tupleVar[2])
+
+        # -------------------- Conditions --------------------
 
         case '==' | '>=' | '>' | '<=' | '<' | '!=':
             left = evalPerso(tupleVar[1])
@@ -68,16 +73,6 @@ def evalPerso(tupleVar):
                 return left < right
             elif op == '!=':
                 return left != right
-
-        case 'string':
-            value = tupleVar[1]
-            if '"' in value or "'" in value:
-                value = tupleVar[1][1:-1]
-            return value
-
-        case 'print':
-            print(evalPerso(tupleVar[1]))
-            return
 
         case 'if':
             if evalPerso(tupleVar[1]):
@@ -98,6 +93,8 @@ def evalPerso(tupleVar):
             exitScope()
             if check:
                 return check
+
+        # -------------------- Boucles --------------------
 
         case 'while':
             while evalPerso(tupleVar[1]):
@@ -140,6 +137,8 @@ def evalPerso(tupleVar):
             returnValue = evalPerso(tupleVar[2])
             variables[-1][tupleVar[1]] = returnValue
 
+        # -------------------- Tableau --------------------
+
         case 'array_access':
             array_name = tupleVar[1]
             index = tupleVar[2]
@@ -154,6 +153,8 @@ def evalPerso(tupleVar):
             for current_scope in reversed(variables):
                 if array_name in current_scope:
                     current_scope[array_name][index] = value
+
+        # -------------------- Classes --------------------
 
         case 'class_declaration':
             if tupleVar[1] in classDict:
@@ -258,6 +259,8 @@ def evalPerso(tupleVar):
             print("ON EST PASSÉ LA, JE SAIS PAS QUOI EN FAIRE")
             exit(1)
 
+        # -------------------- Fonctions --------------------
+
         case 'function':
             if tupleVar[1] not in functions: #and tupleVar[1] not in list(find_dict_in_list(variables, tupleVar[1]).keys()):
                 functions[tupleVar[1]] = (tupleVar[2], tupleVar[3])
@@ -315,6 +318,26 @@ def evalPerso(tupleVar):
                     else:
                         check = None
                 return check
+
+        # -------------------- Fonctions prédéfinies --------------------
+
+        case 'print':
+            print(evalPerso(tupleVar[1]))
+            return
+
+        case 'len':
+            return len(tupleVar[1])
+
+        # -------------------- Statement particuliers --------------------
+
+        case 'string':
+            value = tupleVar[1]
+            if '"' in value or "'" in value:
+                value = tupleVar[1][1:-1]
+            return value
+
+        case 'import':
+            print("IMPORT")
 
         case 'return':
             if len(tupleVar) > 1:
