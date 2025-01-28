@@ -1,7 +1,4 @@
 class Coucou {
-    _construct(){
-        a=0;
-       };
     function test(){
         print("fonction test ok");
     };
@@ -22,7 +19,7 @@ function bite(){
 };
 
 bite = "coucou";
-
-a = new Test();
-a.test();
-print(a.a());
+a = 12;
+b = new Test();
+b.test();
+print(b.a());
