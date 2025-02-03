@@ -37,7 +37,6 @@ def evalPerso(tupleVar):
             exit(1)
         return ("string", tupleVar)
 
-    # print(tupleVar)
     match (tupleVar[0]):
 
         # -------------------- Calcul --------------------
@@ -328,7 +327,19 @@ def evalPerso(tupleVar):
             return
 
         case 'len':
-            return len(tupleVar[1])
+            result = evalPerso(tupleVar[1])
+            if isinstance(result, tuple):
+                if result[0] == "class":
+                    print("Class has no length")
+                    exit(1)
+                else :
+                    print("callable element has no length")
+                    exit(1)
+
+            if isinstance(result, int) or isinstance(result, float) or isinstance(result, complex) or isinstance(result, bool):
+                print(f"{type(result).__name__} {tupleVar[1]} has no length")
+                exit(1)
+            return len(evalPerso(tupleVar[1]))
 
         # -------------------- Statement particuliers --------------------
 
