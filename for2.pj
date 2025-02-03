@@ -1,4 +1,10 @@
 a=1;
-for(b=10; a<b; b--; a++;){
-    print(a);
+function test(){
+    for(b=10; a<b; b--; a++;){
+        print(a);
+        if(a>2){
+            break;
+        };
+    };
 };
+test();
