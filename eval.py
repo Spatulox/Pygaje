@@ -228,8 +228,6 @@ def evalPerso(tupleVar):
                 classParentDictFound = find_dict_in_list(classDict, parent)
                 if classParentDictFound:
                     classReturn = executeConstructor(copy.deepcopy(classParentDictFound), parent, args)
-                else:
-                    print("NO CONSTRUCTOR")
                 varParent = classReturn[1].get(parent)
 
                 enterScope()
@@ -520,12 +518,18 @@ def executeConstructor(dict, name, args):
 
     if constructor_params != [[]] and args != [[]]:
         for param, arg in zip(constructor_params, args):
-            variables[-1][param] = arg
-    elif constructor_params == [[]] and args == [[]]:
+            variables[-1][param[1]] = arg
+    elif constructor_params == [[]] and args == [[]]: # If empty
         pass
     else:
         if len(constructor_params) != len(args):
-            print("Le nomre d'argument attendu ne correspond pas au nombre d'argument donné")
+            print(f"Constructor of class '{name}' expecting {len(constructor_params)}, received {len(args)}")
+            exit(1)
+        elif constructor_params != [[]] and args == [[]]:
+            print(f"Constructor of class '{name}' expecting {len(constructor_params)} params, received 0")
+            exit(1)
+        elif constructor_params == [[]] and args != [[]]:
+            print(f"Constructor of class '{name}' does not expect params, received {len(args)}")
             exit(1)
         print("Erreur de class inconnu")
         exit(1)
