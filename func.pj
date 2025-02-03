@@ -1,1 +1,5 @@
-function test(){print(1);return 1;print(3);}
+function test(){
+    print(1);
+    return 1;
+    print(3);
+};

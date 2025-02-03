@@ -22,7 +22,7 @@ while (i < 5) {
     i = i + 1;
 }
 
-print "Array after Fibonacci:";
+print("Array after Fibonacci:");
 printArray(numbers);
 
 sum = 0;
@@ -34,8 +34,8 @@ for (i = 0; i < 5; i = i + 1) {
     }
 }
 
-print "Final sum:";
-print sum;
+print("Final sum:");
+print(sum);
 
 if (sum % 2 == 0) {
     print "Sum is even";

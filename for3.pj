@@ -1,3 +1,4 @@
+import "func.pj";
 a=1;
 for(b=test(); test(); (b++;test();)){
     print(a);
