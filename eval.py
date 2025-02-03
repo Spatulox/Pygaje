@@ -313,6 +313,9 @@ def evalPerso(tupleVar):
                     theClass[key][var] = variables[-1][var]
             exitScope()
             if check:
+                if isinstance(check, tuple) and check and check[0] == "break":
+                    print("break statement cannot be in a function");
+                    exit(1)
                 while isinstance(check, tuple) and check and check[0] == "return":
                     if len(check) > 1:
                         check = check[1]
