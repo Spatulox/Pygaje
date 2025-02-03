@@ -7,10 +7,11 @@ functions = {}
 classDict = []
 scope = 0
 definingParentClass = False
+dontCreateAnotherVar = False
 
 
 def evalPerso(tupleVar):
-    global scope, definingParentClass
+    global scope, definingParentClass, dontCreateAnotherVar
 
     if isinstance(tupleVar, (int, float)):
         return tupleVar
@@ -136,7 +137,18 @@ def evalPerso(tupleVar):
 
         case "=":
             returnValue = evalPerso(tupleVar[2])
-            variables[-1][tupleVar[1]] = returnValue
+            var_name = tupleVar[1]
+
+            # Evite aux variables d'être créer dans le scope actuel s'il elle existent déjà dans un scope parent, et qu'on veut les utiliser (ref de variables)
+            if dontCreateAnotherVar:
+                for variable in reversed(variables):
+                    if var_name in variable:
+                        variable[var_name] = returnValue
+                        break
+                else:
+                    print(f"Warning: Variable '{var_name}' not found in any scope.")
+            else:
+                variables[-1][var_name] = returnValue
 
         # -------------------- Tableau --------------------
 
@@ -263,7 +275,7 @@ def evalPerso(tupleVar):
         # -------------------- Fonctions --------------------
 
         case 'function':
-            if tupleVar[1] not in functions: #and tupleVar[1] not in list(find_dict_in_list(variables, tupleVar[1]).keys()):
+            if tupleVar[1] not in functions:
                 functions[tupleVar[1]] = (tupleVar[2], tupleVar[3])
                 return f"Function {tupleVar[1]} defined."
             elif find_dict_in_list(variables, tupleVar[1]):
@@ -280,7 +292,7 @@ def evalPerso(tupleVar):
             if tupleVar[1] not in functions and len(tupleVar) == 3:
                 print(f"Function {tupleVar[1]} is not defined.")
                 exit(1)
-            elif len(tupleVar) > 3:
+            elif len(tupleVar) > 3:  # pour les méthodes parent d'une classe enfant
                 # par du dernier élément du tuple, pour retrouver la bonne méthode de classe correspondant
                 theClass = evalPerso(tupleVar[3])[1]
                 key = list(theClass.keys())[0]
@@ -293,16 +305,34 @@ def evalPerso(tupleVar):
                 # Mise en scope des variables de la classe
                 for var in theClass[key]:
                     variables[-1][var] = theClass[key][var]
-            else:
+            else:  # fonction normale
                 params, body = functions[tupleVar[1]]
 
             if len(params) != len(tupleVar[2]):
                 print(f"Function {tupleVar[1]} expected {len(params)} arguments, got {len(tupleVar[2])}.")
                 exit(1)
 
+            # Set up les variables
+            ref_params = {}
             for i in range(len(params)):
-                if params[i] != []:
-                    variables[-1][params[i]] = evalPerso(tupleVar[2][i])
+                if params[i] != [] and params[i][0] == "value":
+                    variables[-1][params[i][1]] = evalPerso(tupleVar[2][i])
+                elif params[i] != [] and params[i][0] == "ref":
+
+                    ref_name = params[i][1]
+                    arg_name = tupleVar[2][i]
+
+                    # Chercher si la variable de référence existe déjà dans un scope
+                    ref_found = False
+                    for s in reversed(range(len(variables))):
+                        if ref_name in variables[s]:
+                            ref_found = True
+                            break
+                    if not ref_found:
+                        dontCreateAnotherVar = True
+                        variables[-1][ref_name] = evalPerso(arg_name)
+                        ref_params[ref_name] = arg_name
+
 
             result = evalPerso(body)
             check = checkBreakReturn(result)
@@ -311,8 +341,22 @@ def evalPerso(tupleVar):
             if len(tupleVar) > 3:
                 for var in theClass[key]:
                     theClass[key][var] = variables[-1][var]
+
+
+            # Si une variable est une référence...
+            for ref_name, arg_name in ref_params.items():
+                for s in reversed(range(len(variables) - 1)):
+                    if arg_name in variables[s]:
+                        variables[s][arg_name] = variables[-1][ref_name]
+                        break
+
+            dontCreateAnotherVar = False
             exitScope()
+
             if check:
+                if isinstance(check, tuple) and check and check[0] == "break":
+                    print("break statement cannot be in a function");
+                    exit(1)
                 while isinstance(check, tuple) and check and check[0] == "return":
                     if len(check) > 1:
                         check = check[1]
@@ -332,11 +376,12 @@ def evalPerso(tupleVar):
                 if result[0] == "class":
                     print("Class has no length")
                     exit(1)
-                else :
+                else:
                     print("callable element has no length")
                     exit(1)
 
-            if isinstance(result, int) or isinstance(result, float) or isinstance(result, complex) or isinstance(result, bool):
+            if isinstance(result, int) or isinstance(result, float) or isinstance(result, complex) or isinstance(result,
+                                                                                                                 bool):
                 print(f"{type(result).__name__} {tupleVar[1]} has no length")
                 exit(1)
             return len(evalPerso(tupleVar[1]))
@@ -349,8 +394,14 @@ def evalPerso(tupleVar):
                 value = tupleVar[1][1:-1]
             return value
 
+        case 'value':
+            return tupleVar[1]
+
+        case 'ref':
+            return tupleVar[1]
+
         case 'import':
-            s = evalPerso(evalPerso(tupleVar[1])) # renvoie un tuple, qu'après je reparsed pour renvoyer que la valeur du string
+            s = evalPerso(evalPerso(tupleVar[1]))  # renvoie un tuple, qu'après je reparsed pour renvoyer que la valeur du string
 
             if not s.startswith("./") and not s.startswith("../"):
                 s = f'./{s}'
@@ -384,8 +435,11 @@ def evalPerso(tupleVar):
             exit()
 
         case 'debug':
+            print("variables :")
             print(variables)
+            print("fonctions :")
             print(functions)
+            print("class dict :")
             print(classDict)
 
 
@@ -464,7 +518,7 @@ def executeConstructor(dict, name, args):
     # Dictionnaire pour { param : valeur, param2 : valeur2}
     # Doit être fait car le "evalPerso()" va devoir faire des calculs avec le paramètre "param"
 
-    if constructor_params != [[]] and args != [[]] :
+    if constructor_params != [[]] and args != [[]]:
         for param, arg in zip(constructor_params, args):
             variables[-1][param] = arg
     elif constructor_params == [[]] and args == [[]]:
