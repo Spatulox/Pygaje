@@ -53,7 +53,8 @@ tokens = ['NUMBER', 'STRING',
           'SIMPLECALC',
           'CONDITIONS',
           'COMMA',
-          'POINT'] + list(reserved.values())
+          'POINT',
+          "REFNAME"] + list(reserved.values())
 
 t_PLUS = r'\+'
 t_MINUS = r'-'
@@ -84,6 +85,11 @@ def t_ID(t):
     t.type = reserved.get(t.value, 'NAME')
     return t
 
+def t_REFNAME(t):
+    r'&[a-zA-Z_][a-zA-Z_0-9]*'
+    t.value = t.value[1:]  # Enlève le '&' du début
+    t.type = reserved.get(t.value, 'REFNAME')
+    return t
 
 t_ASSIGN = r'='
 
@@ -305,6 +311,7 @@ def p_statement_debug(p):
     'statement : DEBUG'
     p[0] = ('debug',)
 
+
 def p_statement_len(p):
     'expression : LEN LPAREN expression RPAREN'
     p[0] = ("len", p[3])
@@ -321,9 +328,20 @@ def p_stringname(p):
     p[0] = p[1]
 
 
+# def p_params(p):
+#     '''params : NAME COMMA params
+#               | NAME
+#               | empty'''
+#     if len(p) == 4:
+#         p[0] = [p[1]] + p[3]
+#     elif len(p) == 2:
+#         p[0] = [p[1]]
+#     else:
+#         p[0] = []
+
 def p_params(p):
-    '''params : NAME COMMA params
-              | NAME
+    '''params : param COMMA params
+              | param
               | empty'''
     if len(p) == 4:
         p[0] = [p[1]] + p[3]
@@ -331,6 +349,15 @@ def p_params(p):
         p[0] = [p[1]]
     else:
         p[0] = []
+
+def p_param(p):
+    '''param : NAME
+             | REFNAME'''
+    if p.slice[1].type == 'NAME':
+        p[0] = ('value', p[1])
+    else:  # p.slice[1].type == 'REFNAME'
+        p[0] = ('ref', p[1])
+
 
 
 def p_args(p):
@@ -348,6 +375,7 @@ def p_args(p):
 def p_error(p):
     print(p)
     print("Syntax error in input!")
+    exit(1)
 
 
 yacc.yacc()
