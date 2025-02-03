@@ -292,8 +292,8 @@ def evalPerso(tupleVar):
             if tupleVar[1] not in functions and len(tupleVar) == 3:
                 print(f"Function {tupleVar[1]} is not defined.")
                 exit(1)
-            elif len(tupleVar) > 3:  # pour les méthodes parent d'une classe enfant
-                # par du dernier élément du tuple, pour retrouver la bonne méthode de classe correspondant
+            elif len(tupleVar) > 3:  # pour les cathodes parent dune class enfant
+                # par du dernier élément du tuple, pour trouve la bonne méthode de class correspondent
                 theClass = evalPerso(tupleVar[3])[1]
                 key = list(theClass.keys())[0]
                 theFunction = find_dict_in_list(find_dict_in_list(classDict, key)[key][1], tupleVar[1])
@@ -302,10 +302,10 @@ def evalPerso(tupleVar):
                 except:
                     print(f"Function '{tupleVar[1]}' is not a method of the class '{key}'.")
                     exit(1)
-                # Mise en scope des variables de la classe
+                # Mise en scope des variables de la class
                 for var in theClass[key]:
                     variables[-1][var] = theClass[key][var]
-            else:  # fonction normale
+            else:  # function normal
                 params, body = functions[tupleVar[1]]
 
             if len(params) != len(tupleVar[2]):
@@ -322,7 +322,7 @@ def evalPerso(tupleVar):
                     ref_name = params[i][1]
                     arg_name = tupleVar[2][i]
 
-                    # Chercher si la variable de référence existe déjà dans un scope
+                    # Cherchez si la variable de référence exist déjà dans un scope
                     ref_found = False
                     for s in reversed(range(len(variables))):
                         if ref_name in variables[s]:
@@ -337,7 +337,7 @@ def evalPerso(tupleVar):
             result = evalPerso(body)
             check = checkBreakReturn(result)
 
-            # Si la fonction est une méthode de classe
+            # Si la function est une méthode de class
             if len(tupleVar) > 3:
                 for var in theClass[key]:
                     theClass[key][var] = variables[-1][var]
@@ -355,7 +355,7 @@ def evalPerso(tupleVar):
 
             if check:
                 if isinstance(check, tuple) and check and check[0] == "break":
-                    print("break statement cannot be in a function");
+                    print("break statement cannot be in a function")
                     exit(1)
                 while isinstance(check, tuple) and check and check[0] == "return":
                     if len(check) > 1:
