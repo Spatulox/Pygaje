@@ -26,7 +26,8 @@ reserved = {
     'new': 'NEW',
     '_construct': 'CONSTRUCT',
     'debug': 'DEBUG',
-    "import": 'IMPORT'
+    "import": 'IMPORT',
+    "len": "LEN"
 }
 
 precedence = (
@@ -304,15 +305,21 @@ def p_statement_debug(p):
     'statement : DEBUG'
     p[0] = ('debug',)
 
+def p_statement_len(p):
+    'expression : LEN LPAREN expression RPAREN'
+    p[0] = ("len", p[3])
+
 
 def p_statement_import(p):
     '''statement : IMPORT stringname'''
     p[0] = ("import", p[2])
 
+
 def p_stringname(p):
     '''stringname : NAME
     | STRING'''
     p[0] = p[1]
+
 
 def p_params(p):
     '''params : NAME COMMA params
