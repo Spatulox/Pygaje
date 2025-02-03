@@ -19,8 +19,16 @@ FONCTIONS :
 - Fonction void/return
 - Fonctions avec/sans paramètres
 - Fonctions récursives
-- Passage par référence (c'est une copie dans un scope, puis remplacement de la valeur originale par la copie à la fin de la fonction)
+- Passage par référence (c'est une copie dans le scope suivant (pour "lier" la nouvelle variable à la var parent), puis remplacement de la valeur originale par la copie à la fin de la fonction)
+- Gestion des Erreurs
+    - Pas de break dans une fonction (sans être dans une boucle)
+    - Nombre de paramètres
 
 FONCTIONS PAR DEFAUT :
+- print
 - len
 - debug
+
+FICHIERS
+- Executer des fichiers directement dans la console (chemin relatif ../chemin/fichier.pj)
+- Importer des fichiers dans le code (import) => chemin relatif aussi
