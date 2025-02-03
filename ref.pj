@@ -1,0 +1,6 @@
+function ref(&a){
+    a+=1;
+    print(a);
+    debug;
+};
+a=1;
