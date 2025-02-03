@@ -126,9 +126,12 @@ lex.lex()
 def p_block(p):
     '''block : statement SEMICOLON block
              | statement SEMICOLON
-             | statement'''
-    if len(p) == 4:
+             | statement
+             | LPAREN block RPAREN'''
+    if len(p) == 4 and p.slice[3].type == 'block':
         p[0] = ('block', p[1], p[3])
+    elif len(p) == 4 and p.slice[2].type == 'block':
+        p[0] = ('block', p[2])
     else:
         p[0] = ('block', p[1])
 
