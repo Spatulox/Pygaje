@@ -306,8 +306,15 @@ def evalPerso(tupleVar):
             else:  # function normal
                 params, body = functions[tupleVar[1]]
 
-            if len(params) != len(tupleVar[2]):
-                print(f"Function {tupleVar[1]} expected {len(params)} arguments, got {len(tupleVar[2])}.")
+            args = tupleVar[2]
+            if len(params) != len(args):
+                print(f"Function {tupleVar[1]} expected {len(params)} arguments, got {len(args)}.")
+                exit(1)
+            elif params != [[]] and args == [[]]:
+                print(f"Function '{tupleVar[1]}' expecting {len(params)} params, received 0")
+                exit(1)
+            elif params == [[]] and args != [[]]:
+                print(f"Function '{tupleVar[1]}' does not expect params, received {len(args)}")
                 exit(1)
 
             # Set up les variables
