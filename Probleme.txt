@@ -1,0 +1,14 @@
+-------------------------------
+Impossible de faire des calculs dans les params des fonctions :
+
+function(n){
+    print(n);
+};
+
+test(x+1); // Crash au niveau du lexer
+
+
+-------------------------------
+Faut rajouter un système de commentaires
+-------------------------------
+++ n'est pas reconnu dans le cas du fichier for3.pj
