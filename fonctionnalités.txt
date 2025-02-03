@@ -1,0 +1,26 @@
+VARIABLES :
+- Scope
+- Type : string / int / array
+
+TABLEAU :
+- Initialisation
+- Accès
+- Remplacement
+
+CLASSES :
+- Variables
+- Méthode
+- Classes enfant qui héritent des méthodes et des variables des parents
+- Gestions des Erreurs :
+    - Nombres de paramètres
+    - Méthode/var qui n'existe pas
+
+FONCTIONS :
+- Fonction void/return
+- Fonctions avec/sans paramètres
+- Fonctions récursives
+- Passage par référence (c'est une copie dans un scope, puis remplacement de la valeur originale par la copie à la fin de la fonction)
+
+FONCTIONS PAR DEFAUT :
+- len
+- debug
