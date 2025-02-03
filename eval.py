@@ -387,8 +387,11 @@ def evalPerso(tupleVar):
             exit()
 
         case 'debug':
+            print("variables :")
             print(variables)
+            print("fonctions :")
             print(functions)
+            print("class dict :")
             print(classDict)
 
 
