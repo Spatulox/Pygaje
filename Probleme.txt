@@ -5,10 +5,11 @@ function(n){
     print(n);
 };
 
-test(x+1); // Crash au niveau du lexer
-
+test(x+1);
+// Crash au niveau du lexer (args => prend une expression, et les calculs ne sont pas des expressions, mais des statements
+// Sauf que si on met statement, on pourra mettre un for dans une arg de fonction)
 
 -------------------------------
 Faut rajouter un système de commentaires
 -------------------------------
-++ n'est pas reconnu dans le cas du fichier for3.pj
+Trouver le moyen de transformer une fonction récursive en while (lol)
