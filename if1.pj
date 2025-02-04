@@ -1,0 +1,9 @@
+a=1;
+if(a>2){
+    print("pourquoi je suis là ?");
+} else if(a==1){
+    print("Je suis au bon endroit");
+} else {
+    print("Je suis trop loin");
+};
+print("Je suis sorti des if / else if / else");
