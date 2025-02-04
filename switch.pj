@@ -1,0 +1,7 @@
+a=2;
+switch(a){
+    case 1:
+        print(a);
+    case 2:
+        print(2);
+};

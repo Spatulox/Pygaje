@@ -27,7 +27,9 @@ reserved = {
     '_construct': 'CONSTRUCT',
     'debug': 'DEBUG',
     "import": 'IMPORT',
-    "len": "LEN"
+    "len": "LEN",
+    "switch": "SWITCH",
+    "case": "CASE"
 }
 
 precedence = (
@@ -47,6 +49,7 @@ tokens = ['NUMBER', 'STRING',
           'LHOOK', 'RHOOK',
           'AND', 'OR',
           'SEMICOLON',
+          'DOUBLEPOINT',
           'NAME',
           'ASSIGN',
           'CALC',
@@ -74,6 +77,7 @@ t_WHILE = r'while'
 
 t_COMMA = r','
 t_SEMICOLON = r';'
+t_DOUBLEPOINT = r':'
 t_POINT = r'\.'
 t_AND = r'&'
 t_OR = r'\|'
@@ -169,6 +173,17 @@ def p_statement_for(p):
     p[0] = ('for', ("=", p[3], p[5]), p[7], p[9], p[12])
     # for           int i = 1,        i<5, i++, block
 
+def p_statement_switch_case(p):
+    '''statement : SWITCH LPAREN expression RPAREN LBRACE blockCASE RBRACE'''
+    p[0] = ("switch", p[3], p[6])
+
+def p_block_case(p):
+    '''blockCASE : CASE expression DOUBLEPOINT block
+                | CASE expression DOUBLEPOINT block blockCASE '''
+    if len(p) == 5:
+        p[0] = ("case", p[2], p[4])
+    else :
+        p[0] = ("case", p[2], p[4], p[5])
 
 def p_statement_print(p):
     '''statement : PRINT expression'''

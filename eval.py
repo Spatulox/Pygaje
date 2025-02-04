@@ -150,6 +150,19 @@ def evalPerso(tupleVar):
             else:
                 variables[-1][var_name] = returnValue
 
+        # -------------------- Switch  --------------------
+
+        case 'switch':
+            print(tupleVar)
+            value = evalPerso(tupleVar[1])
+            case = tupleVar[2]
+            while case != None:
+                if(case[1] == value):
+                    return evalPerso(case[2])
+                elif case[3] and isinstance(case[3], tuple):
+                    case = case[3]
+            return None
+
         # -------------------- Tableau --------------------
 
         case 'array_access':
