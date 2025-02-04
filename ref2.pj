@@ -1,12 +1,10 @@
-function add(&varName, numberToAdd, count){
-    if(count >= numberToAdd){
-        break;
-    };
-    count++;
+function incr(&varName){
     varName+=1;
-    add(varName, numberToAdd, count);
+    print(varName);
+    debug;
+    incr(varName);
 };
 a=1;
 print(a);
-add(a, 12, 0);
+incr(a);
 print(a);
