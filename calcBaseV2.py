@@ -154,12 +154,23 @@ def p_statement_expr(p):
 
 
 def p_statement_if(p):
-    '''statement : IF LPAREN expression RPAREN LBRACE block RBRACE
-                 | IF LPAREN expression RPAREN LBRACE block RBRACE ELSE LBRACE block RBRACE'''
-    if len(p) == 8:
-        p[0] = ('if', p[3], p[6])
-    else:
-        p[0] = ('if-else', p[3], p[6], p[10])
+    '''statement : if_statement'''
+    p[0] = p[1]
+
+def p_if_statement(p):
+    '''if_statement : IF LPAREN expression RPAREN LBRACE block RBRACE elseif_or_else'''
+    p[0] = ('if', p[3], p[6], p[8])
+
+def p_elseif_or_else(p):
+    '''elseif_or_else : ELSE IF LPAREN expression RPAREN LBRACE block RBRACE elseif_or_else
+                      | ELSE LBRACE block RBRACE
+                      | empty'''
+    if len(p) == 10:  # else if case
+        p[0] = ('elif', p[4], p[7], p[9])
+    elif len(p) == 5:  # else case
+        p[0] = ('else', p[3])
+    else:  # empty case
+        p[0] = None
 
 
 def p_statement_while(p):
