@@ -153,7 +153,6 @@ def evalPerso(tupleVar):
         # -------------------- Switch  --------------------
 
         case 'switch':
-            print(tupleVar)
             value = evalPerso(tupleVar[1])
             case = tupleVar[2]
             while case != None:
