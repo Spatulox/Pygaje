@@ -85,11 +85,13 @@ def t_ID(t):
     t.type = reserved.get(t.value, 'NAME')
     return t
 
+
 def t_REFNAME(t):
     r'&[a-zA-Z_][a-zA-Z_0-9]*'
     t.value = t.value[1:]  # Enlève le '&' du début
     t.type = reserved.get(t.value, 'REFNAME')
     return t
+
 
 t_ASSIGN = r'='
 
@@ -216,9 +218,13 @@ def p_expression_group(p):
     p[0] = p[2]
 
 
-def p_expression_number(p):
+def p_expression_number_int(p):
     'expression : NUMBER'
     p[0] = p[1]
+
+def p_expression_number_float(p):
+    'expression : NUMBER POINT NUMBER'
+    p[0] = float(f"{p[1]}.{p[3]}")
 
 
 def p_expression_name(p):
@@ -353,6 +359,7 @@ def p_params(p):
     else:
         p[0] = []
 
+
 def p_param(p):
     '''param : NAME
              | REFNAME'''
@@ -360,7 +367,6 @@ def p_param(p):
         p[0] = ('value', p[1])
     else:  # p.slice[1].type == 'REFNAME'
         p[0] = ('ref', p[1])
-
 
 
 def p_args(p):
