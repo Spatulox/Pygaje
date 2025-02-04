@@ -76,7 +76,7 @@ def evalPerso(tupleVar):
             elif op == '!=':
                 return left != right
 
-        case 'if':
+        case 'if' | 'elif':
             if evalPerso(tupleVar[1]):
                 enterScope()
                 result = evalPerso(tupleVar[2])
@@ -84,13 +84,13 @@ def evalPerso(tupleVar):
                 exitScope()
                 if check:
                     return check
+            else :
+                if tupleVar[3] and isinstance(tupleVar[3], tuple):
+                    evalPerso(tupleVar[3])
 
-        case 'if-else':
+        case 'else':
             enterScope()
-            if evalPerso(tupleVar[1]):
-                result = evalPerso(tupleVar[2])
-            else:
-                result = evalPerso(tupleVar[3])
+            result = evalPerso(tupleVar[1])
             check = checkBreakReturn(result)
             exitScope()
             if check:
