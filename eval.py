@@ -57,7 +57,11 @@ def evalPerso(tupleVar):
         case '+':
             return evalPerso(tupleVar[1]) + evalPerso(tupleVar[2])
         case '%':
-            return evalPerso(tupleVar[1]) % evalPerso(tupleVar[2])
+            result = evalPerso(tupleVar[2])
+            if result == 0:
+                print("Error, Impossible to do a modulo by 0")
+                exit(1)
+            return evalPerso(tupleVar[1]) % result
 
         # -------------------- Conditions --------------------
 
