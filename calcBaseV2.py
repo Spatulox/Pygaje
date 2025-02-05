@@ -134,7 +134,8 @@ def p_block(p):
     '''block : statement SEMICOLON block
              | statement SEMICOLON
              | statement
-             | LPAREN block RPAREN'''
+             | LPAREN block RPAREN
+             | empty '''
     if len(p) == 4 and p.slice[3].type == 'block':
         p[0] = ('block', p[1], p[3])
     elif len(p) == 4 and p.slice[2].type == 'block':
@@ -198,7 +199,7 @@ def p_block_case(p):
         p[0] = ("case", p[2], p[4], p[5])
 
 def p_statement_print(p):
-    '''statement : PRINT expression'''
+    '''statement : PRINT statement'''
     p[0] = ("print", p[2])
 
 
@@ -210,8 +211,8 @@ def p_expression_condition(p):
     p[0] = (p[2], p[1], p[3])
 
 
-def p_expression_calc(p):
-    'expression : NAME CALC expression'
+def p_statement_calc(p):
+    'statement : NAME CALC expression'
     tmpCalc = p[2].split("=")[0]
     p[0] = ("=", p[1], (tmpCalc, p[1], p[3]))
 
@@ -302,12 +303,12 @@ def p_statement_array_declare(p):
 
 
 def p_statement_array_access(p):
-    'statement : NAME LHOOK expression RHOOK'
+    'expression : NAME LHOOK expression RHOOK'
     p[0] = ("array_access", p[1], p[3])
 
 
 def p_statement_array_acces_update(p):
-    'statement : NAME LHOOK NUMBER RHOOK ASSIGN expression'
+    'statement : NAME LHOOK expression RHOOK ASSIGN expression'
     p[0] = ("array_replace", p[1], p[3], p[6])
 
 
