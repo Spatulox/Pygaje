@@ -43,7 +43,7 @@ precedence = (
 )
 
 tokens = ['NUMBER', 'STRING',
-          'MINUS', 'PLUS', 'TIMES', 'DIVIDE', 'POW',
+          'MINUS', 'PLUS', 'TIMES', 'DIVIDE', 'POW', 'MODULO',
           'LPAREN', 'RPAREN',
           'LBRACE', 'RBRACE',
           'LHOOK', 'RHOOK',
@@ -61,6 +61,7 @@ tokens = ['NUMBER', 'STRING',
 
 t_PLUS = r'\+'
 t_MINUS = r'-'
+t_MODULO = r'\%'
 t_TIMES = r'\*'
 t_DIVIDE = r'/'
 t_POW = r'\^'
@@ -235,7 +236,8 @@ def p_expression_binop(p):
                   | expression MINUS expression
                   | expression TIMES expression
                   | expression DIVIDE expression
-                  | expression POW expression'''
+                  | expression POW expression
+                  | expression MODULO expression'''
     p[0] = (p[2], p[1], p[3])
 
 

@@ -56,6 +56,8 @@ def evalPerso(tupleVar):
             return evalPerso(tupleVar[1]) - evalPerso(tupleVar[2])
         case '+':
             return evalPerso(tupleVar[1]) + evalPerso(tupleVar[2])
+        case '%':
+            return evalPerso(tupleVar[1]) % evalPerso(tupleVar[2])
 
         # -------------------- Conditions --------------------
 
