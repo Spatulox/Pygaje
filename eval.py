@@ -8,10 +8,11 @@ classDict = []
 scope = 0
 definingParentClass = False
 dontCreateAnotherVar = False
+whenRecursiveFunctionBegin = len(variables)
 
 
 def evalPerso(tupleVar):
-    global scope, definingParentClass, dontCreateAnotherVar
+    global scope, definingParentClass, dontCreateAnotherVar, whenRecursiveFunctionBegin
 
     if isinstance(tupleVar, (int, float)):
         return tupleVar
@@ -149,12 +150,14 @@ def evalPerso(tupleVar):
 
             # Evite aux variables d'être créer dans le scope actuel s'il elle existent déjà dans un scope parent, et qu'on veut les utiliser (ref de variables)
             if dontCreateAnotherVar:
+                # Recherche une variable avant d'en créer une dans le scope actuel
                 for variable in reversed(variables):
                     if var_name in variable:
                         variable[var_name] = returnValue
                         break
-                else:
+                else:# Si la variable n'existe dans aucun scope, la créer quand même
                     print(f"Warning: Variable '{var_name}' not found in any scope.")
+                    variables[-1][var_name] = returnValue
             else:
                 variables[-1][var_name] = returnValue
 
@@ -305,88 +308,107 @@ def evalPerso(tupleVar):
 
         case 'call':
             enterScope()
-            params, body = 0, 0
-            theClass, key = 0, 0
-            if tupleVar[1] not in functions and len(tupleVar) == 3:
-                print(f"Function {tupleVar[1]} is not defined.")
-                exit(1)
-            elif len(tupleVar) > 3:  # pour les cathodes parent dune class enfant
-                # par du dernier élément du tuple, pour trouve la bonne méthode de class correspondent
-                theClass = evalPerso(tupleVar[3])[1]
-                key = list(theClass.keys())[0]
-                theFunction = find_dict_in_list(find_dict_in_list(classDict, key)[key][1], tupleVar[1])
-                try:
-                    params, body = theFunction[tupleVar[1]]
-                except:
-                    print(f"Function '{tupleVar[1]}' is not a method of the class '{key}'.")
-                    exit(1)
-                # Mise en scope des variables de la class
-                for var in theClass[key]:
-                    variables[-1][var] = theClass[key][var]
-            else:  # function normal
-                params, body = functions[tupleVar[1]]
-
+            params, body = get_function_params_and_body(tupleVar)
             args = tupleVar[2]
-            if len(params) != len(args):
-                print(f"Function {tupleVar[1]} expected {len(params)} arguments, got {len(args)}.")
-                exit(1)
-            elif params != [[]] and args == [[]]:
-                print(f"Function '{tupleVar[1]}' expecting {len(params)} params, received 0")
-                exit(1)
-            elif params == [[]] and args != [[]]:
-                print(f"Function '{tupleVar[1]}' does not expect params, received {len(args)}")
-                exit(1)
+            validate_function_args(tupleVar[1], params, args)
+            ref_params = setup_function_variables(params, args)
 
-            # Set up les variables
-            ref_params = {}
-            for i in range(len(params)):
-                if params[i] != [] and params[i][0] == "value":
-                    variables[-1][params[i][1]] = evalPerso(tupleVar[2][i])
-                elif params[i] != [] and params[i][0] == "ref":
+            is_recursive = detect_recursion(body, tupleVar[1])
+            if is_recursive:
+                whenRecursiveFunctionBegin = len(variables)
+                # On "applati" le tuple pour en faire une liste de block
+                depil_block = []
+                result = None
+                def process_element(element):
+                    if isinstance(element, tuple) and element[0] == 'block':
+                        for sub_element in element[1:]:
+                            process_element(sub_element)
+                    else:
+                        depil_block.append(('block', element))
 
-                    ref_name = params[i][1]
-                    arg_name = tupleVar[2][i]
+                process_element(body)
 
-                    # Cherchez si la variable de référence exist déjà dans un scope
-                    ref_found = False
-                    for s in reversed(range(len(variables))):
-                        if ref_name in variables[s]:
-                            ref_found = True
-                            break
-                    if not ref_found:
-                        dontCreateAnotherVar = True
-                        variables[-1][ref_name] = evalPerso(arg_name)
-                        ref_params[ref_name] = arg_name
+                i = 0
+                i_bkp = []
+                return_value = None
 
+                def handle_control_structure(structure):
+                    global dontCreateAnotherVar
+                    if structure[0] == 'if':
+                        return evalPerso(structure)
+                    elif structure[0] == 'for' or structure[0] == 'while':
+                        res = evalPerso(structure)
+                        check = checkBreakReturn(res)
+                        if check is not None:
+                            if isinstance(check, tuple) and check[0] == 'return':
+                                return check[1]
+                        return res
+
+                print(depil_block)
+                while whenRecursiveFunctionBegin <= len(variables) or i < len(depil_block):
+                    the_block = depil_block[i][1]
+                    if isinstance(the_block, tuple):
+                        if the_block[0] == 'call':
+                            i_bkp.append(i)
+                            enterScope()
+                            i = -1  # recommence au début de la liste (car récursif)
+                        elif the_block[0] == "return":
+                            return_value = evalPerso(the_block[1]) if len(the_block) > 1 else None
+                            i_bkp.pop()
+                            exitScope()
+                            if i_bkp:
+                                i = i_bkp[-1] # On est sorti de la "dernière itération de la fonction recursive,
+                                              # alors on repart là où on en était de la fonction recu précédente
+                            else:
+                                break
+                        elif the_block[0] in ['if', 'for', 'while']:
+                            result = handle_control_structure(the_block)
+                            if isinstance(result, tuple) and result[0] == 'return':
+                                if len(result) > 1:
+                                    # faire des truc
+                                    print("Len long")
+                                    print(result)
+                                    #exit()
+                                i_bkp.pop()
+                                exitScope()
+                                if i_bkp:
+                                    i = i_bkp[-1] # On est sorti de la "dernière itération de la fonction recursive,
+                                                  # alors on repart là où on en était de la fonction recu précédente
+                                else:
+                                    break
+                        else:
+                            evalPerso(the_block)
+                            if i == len(depil_block)-1:
+                                i_bkp.pop()
+                                exitScope()
+                                if i_bkp:
+                                    i = i_bkp[-1] # On est sorti de la "dernière itération de la fonction recursive,
+                                                  # alors on repart là où on en était de la fonction recu précédente
+                                else:
+                                    break
+                    else:
+                        result = evalPerso(the_block)
+                        check = checkBreakReturn(result)
+                        if check is not None:
+                            if isinstance(check, tuple) and check[0] == 'return':
+                                return_value = check[1] if len(check) > 1 else None
+                                print("RETURN wtf")
+                                if len(result) > 1:
+                                    # faire des truc
+                                    print("Len long")
+                                    exit()
+                                # Toujours update les variables parent
+
+                    i += 1
+
+                exitScope()
+                return return_value if return_value is not None else result
 
             result = evalPerso(body)
-            check = checkBreakReturn(result)
-
-            # Si la function est une méthode de class
-            if len(tupleVar) > 3:
-                for var in theClass[key]:
-                    theClass[key][var] = variables[-1][var]
-
-
-            # Si une variable est une référence...
-            for ref_name, arg_name in ref_params.items():
-                for s in reversed(range(len(variables) - 1)):
-                    if arg_name in variables[s]:
-                        variables[s][arg_name] = variables[-1][ref_name]
-                        break
-
-            dontCreateAnotherVar = False
+            handle_class_method_variables(tupleVar)
+            update_reference_variables(ref_params)
             exitScope()
-
-            if check is not None:
-                if isinstance(check, tuple) and check and check[0] == "break":
-                    print("break statement cannot be in a function")
-                    exit(1)
-                while isinstance(check, tuple) and check and check[0] == "return":
-                    if len(check) > 1:
-                        check = check[1]
-                return evalPerso(check)
-            return result
+            return process_function_result(result)
 
         # -------------------- Fonctions prédéfinies --------------------
 
@@ -587,3 +609,121 @@ def detect_constructor(input_data):
         return None
 
     return search_constructor(input_data)
+
+
+## --------------- FUNCTION FOR THE CALL TUPLE ------------------ ##
+
+def get_function_params_and_body(tupleVar):
+    if tupleVar[1] not in functions and len(tupleVar) == 3:
+        print(f"Function {tupleVar[1]} is not defined.")
+        exit(1)
+    elif len(tupleVar) > 3:
+        return get_class_method_params_and_body(tupleVar)
+    else:
+        return functions[tupleVar[1]]
+
+def get_class_method_params_and_body(tupleVar):
+    theClass = evalPerso(tupleVar[3])[1]
+    key = list(theClass.keys())[0]
+    theFunction = find_dict_in_list(find_dict_in_list(classDict, key)[key][1], tupleVar[1])
+    try:
+        params, body = theFunction[tupleVar[1]]
+    except:
+        print(f"Function '{tupleVar[1]}' is not a method of the class '{key}'.")
+        exit(1)
+    setup_class_variables(theClass, key)
+    return params, body
+
+def setup_class_variables(theClass, key):
+    for var in theClass[key]:
+        variables[-1][var] = theClass[key][var]
+
+def validate_function_args(func_name, params, args):
+    if len(params) != len(args):
+        print(f"Function {func_name} expected {len(params)} arguments, got {len(args)}.")
+        exit(1)
+    elif params != [[]] and args == [[]]:
+        print(f"Function '{func_name}' expecting {len(params)} params, received 0")
+        exit(1)
+    elif params == [[]] and args != [[]]:
+        print(f"Function '{func_name}' does not expect params, received {len(args)}")
+        exit(1)
+
+def setup_function_variables(params, args):
+    ref_params = {}
+    for i, param in enumerate(params):
+        if param != [] and param[0] == "value":
+            variables[-1][param[1]] = evalPerso(args[i])
+        elif param != [] and param[0] == "ref":
+            setup_reference_variable(param[1], args[i], ref_params)
+    return ref_params
+
+def setup_reference_variable(ref_name, arg_name, ref_params):
+    global dontCreateAnotherVar
+    if not is_variable_in_scope(ref_name):
+        dontCreateAnotherVar = True
+        variables[-1][ref_name] = evalPerso(arg_name)
+        ref_params[ref_name] = arg_name
+
+def is_variable_in_scope(var_name):
+    for scope in reversed(variables):
+        if var_name in scope:
+            return True
+    return False
+
+def handle_class_method_variables(tupleVar):
+    if len(tupleVar) > 3:
+        theClass = evalPerso(tupleVar[3])[1]
+        key = list(theClass.keys())[0]
+        for var in theClass[key]:
+            theClass[key][var] = variables[-1][var]
+
+def update_reference_variables(ref_params):
+    global dontCreateAnotherVar
+    for ref_name, arg_name in ref_params.items():
+        for s in reversed(range(len(variables) - 1)):
+            if arg_name in variables[s]:
+                variables[s][arg_name] = variables[-1][ref_name]
+                break
+    dontCreateAnotherVar = False
+
+def process_function_result(result):
+    check = checkBreakReturn(result)
+    if check is not None:
+        if isinstance(check, tuple) and check and check[0] == "break":
+            print("break statement cannot be in a function")
+            exit(1)
+        while isinstance(check, tuple) and check and check[0] == "return":
+            if len(check) > 1:
+                check = check[1]
+        return evalPerso(check)
+    return result
+
+def detect_recursion(body, function_name):
+    if isinstance(body, tuple):
+        if body[0] == 'call' and body[1] == function_name:
+            return True
+
+        if body[0] in ['if', 'elif', 'else']:
+            for part in body[1:]:
+                if detect_recursion(part, function_name):
+                    return True
+
+        for element in body:
+            if detect_recursion(element, function_name):
+                return True
+
+    elif isinstance(body, list):
+        for element in body:
+            if detect_recursion(element, function_name):
+                return True
+
+    elif isinstance(body, dict):
+        for value in body.values():
+            if detect_recursion(value, function_name):
+                return True
+
+    return False
+
+def debug():
+    evalPerso(("debug",))
