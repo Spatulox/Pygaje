@@ -314,35 +314,75 @@ def evalPerso(tupleVar):
             ref_params = setup_function_variables(params, args)
 
             is_recursive, parent = detect_recursion(body, tupleVar[1], None)
+
+            def match_structure(pattern, target):
+                if isinstance(pattern, tuple) and isinstance(target, tuple):
+                    if len(pattern) < 2 or len(target) < 2:
+                        return False
+                    return pattern[0] == target[0] == 'call' and pattern[1] == target[1]
+                return False
+
+            def find_and_replace(structure, pattern, replacement):
+                if match_structure(pattern, structure):
+                    return replacement
+                elif isinstance(structure, tuple):
+                    return tuple(find_and_replace(item, pattern, replacement) for item in structure)
+                elif isinstance(structure, list):
+                    return [find_and_replace(item, pattern, replacement) for item in structure]
+                else:
+                    return structure
+
+            parent = find_and_replace(parent, (tupleVar[0], tupleVar[1]), "RECURSIVE_CALL_PLACEHOLDER")
+
             result = None
             if is_recursive:
 
                 whenRecursiveFunctionBegin = len(variables)
                 # On "applati" le tuple pour en faire une liste de block, en supprimant le parent de l'appel récursif
-                def process_element(element, function_name):
+                def process_element(element, function_name, parent=None):
                     depil_block = []
+                    RECURSIVE_CALL_PLACEHOLDER = "RECURSIVE_CALL_PLACEHOLDER"
 
-                    def _process(el, parent=None):
+                    def _process(el, current_parent=None):
                         if isinstance(el, tuple):
                             if el[0] == 'block':
+                                new_block = ['block']
                                 for sub_el in el[1:]:
-                                    _process(sub_el, el[0])
-                            elif parent != 'block' and isinstance(el[1], tuple) and el[1][0] == 'call' and el[1][1] == function_name:
-                                depil_block.append(('block', el[1]))
-                            elif parent == 'block':
-                                depil_block.append(('block', el))
+                                    result = _process(sub_el, el)
+                                    if result != RECURSIVE_CALL_PLACEHOLDER:
+                                        new_block.append(result)
+                                return tuple(new_block)
+                            elif el[0] == 'call' and el[1] == function_name:
+                                # Retourner directement le tuple 'call' sans ses parents
+                                return el
+                            elif el[0] in ['call', '=', 'print']:
+                                new_el = list(el)
+                                for i, sub_el in enumerate(el[1:], 1):
+                                    result = _process(sub_el, el)
+                                    if isinstance(result, tuple) and result[0] == 'call' and result[1] == function_name:
+                                        # Remplacer l'appel de fonction par ses arguments
+                                        new_el[i:] = list(result[2])
+                                    elif result != RECURSIVE_CALL_PLACEHOLDER:
+                                        new_el[i] = result
+                                return tuple(new_el)
                             else:
-                                for sub_el in el:
-                                    _process(sub_el, el[0])
+                                return el
                         else:
-                            if parent == 'block':
-                                depil_block.append(('block', el))
+                            return el
 
-                    _process(element)
+                    result = _process(element)
+                    if result != RECURSIVE_CALL_PLACEHOLDER and result[0] == 'block':
+                        depil_block.extend(result[1:])
+                    elif result != RECURSIVE_CALL_PLACEHOLDER:
+                        depil_block.append(result)
+
                     return depil_block
 
                 depil_block = process_element(body, tupleVar[1])
-
+                print(body)
+                print(depil_block)
+                print(parent)
+                exit()
                 i = 0
                 i_bkp = []
                 return_value = None
@@ -364,7 +404,7 @@ def evalPerso(tupleVar):
 
                     the_block = depil_block[i][1]
                     if isinstance(the_block, tuple):
-                        if the_block[0] == 'call':
+                        if the_block[0] == 'call' and the_block[1] == tupleVar[1]:
                             i_bkp.append(i)
                             enterScope()
                             i = -1  # recommence au début de la liste (car récursif)
@@ -711,27 +751,30 @@ def process_function_result(result):
         return evalPerso(check)
     return result
 
-def detect_recursion(body, function_name, parent=None):
+def detect_recursion(body, function_name, parent_stack=None):
+    if parent_stack is None:
+        parent_stack = []
+
     if isinstance(body, tuple):
         if body[0] == 'call' and body[1] == function_name:
-            return True, parent
+            return True, parent_stack[0]
 
-        new_parent = body if body[0] in ['=', 'print'] else parent
+        new_parent_stack = parent_stack + [body] if body[0] in ['=', 'print', 'call'] else parent_stack
 
         for element in body[1:]:  # Start from index 1 to skip the first element
-            result, context = detect_recursion(element, function_name, new_parent)
+            result, context = detect_recursion(element, function_name, new_parent_stack)
             if result:
                 return True, context
 
     elif isinstance(body, list):
         for element in body:
-            result, context = detect_recursion(element, function_name, parent)
+            result, context = detect_recursion(element, function_name, parent_stack)
             if result:
                 return True, context
 
     elif isinstance(body, dict):
         for value in body.values():
-            result, context = detect_recursion(value, function_name, parent)
+            result, context = detect_recursion(value, function_name, parent_stack)
             if result:
                 return True, context
 
