@@ -84,7 +84,7 @@ def evalPerso(tupleVar):
                 result = evalPerso(tupleVar[2])
                 check = checkBreakReturn(result)
                 exitScope()
-                if check:
+                if check is not None:
                     return check
             else :
                 if tupleVar[3] and isinstance(tupleVar[3], tuple):
@@ -95,7 +95,7 @@ def evalPerso(tupleVar):
             result = evalPerso(tupleVar[1])
             check = checkBreakReturn(result)
             exitScope()
-            if check:
+            if check is not None:
                 return check
 
         # -------------------- Boucles --------------------
@@ -106,7 +106,7 @@ def evalPerso(tupleVar):
                 result = evalPerso(tupleVar[2])
                 check = checkBreakReturn(result)
                 scope -= 1
-                if check:
+                if check is not None:
                     if check[0] == "break":
                         break
                     elif check[0] == "continue":
@@ -121,7 +121,7 @@ def evalPerso(tupleVar):
                 result = evalPerso(tupleVar[4])
                 check = checkBreakReturn(result)
                 scope -= 1
-                if check:
+                if check is not None:
                     if check[0] == "break":
                         break
                     elif check[0] == "continue":
@@ -134,7 +134,7 @@ def evalPerso(tupleVar):
             for statement in tupleVar[1:]:
                 result = evalPerso(statement)
                 check = checkBreakReturn(result)
-                if check:
+                if check is not None:
                     return check
 
         case "=":
@@ -272,7 +272,7 @@ def evalPerso(tupleVar):
             elif isinstance(tupleVar[2], tuple):
                 result = evalPerso(("call", tupleVar[2][1], tupleVar[2][2], tupleVar[1]))
                 check = checkBreakReturn(result)
-                if check:
+                if check is not None:
                     return check
                 return result
             print("This attribute doesn't exist in this class")
@@ -372,7 +372,7 @@ def evalPerso(tupleVar):
             dontCreateAnotherVar = False
             exitScope()
 
-            if check:
+            if check is not None:
                 if isinstance(check, tuple) and check and check[0] == "break":
                     print("break statement cannot be in a function")
                     exit(1)
