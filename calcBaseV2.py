@@ -107,8 +107,8 @@ t_SIMPLECALC = r'(\+\+|--)'
 
 
 def t_NUMBER(t):
-    r'\d+'
-    t.value = int(t.value)
+    r'\d+(\.\d+)?'
+    t.value = float(t.value) if '.' in t.value else int(t.value)
     return t
 
 
@@ -246,13 +246,9 @@ def p_expression_group(p):
     p[0] = p[2]
 
 
-def p_expression_number_int(p):
+def p_expression_number(p):
     'expression : NUMBER'
     p[0] = p[1]
-
-def p_expression_number_float(p):
-    'expression : NUMBER POINT NUMBER'
-    p[0] = float(f"{p[1]}.{p[3]}")
 
 
 def p_expression_name(p):
