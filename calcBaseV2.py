@@ -38,6 +38,7 @@ precedence = (
     ('nonassoc', 'CONDITIONS'),
     ('left', 'PLUS', 'MINUS'),
     ('left', 'TIMES', 'DIVIDE'),
+    ('left', 'MODULO'),
     ('right', 'CALC'),
     ('right', 'SIMPLECALC'),
 )
