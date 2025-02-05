@@ -1,10 +1,21 @@
 function incr(&varName){
     varName+=1;
     print(varName);
-    debug;
+    if(varName == 200){
+        #print(a);
+        return 1;
+        exit;
+    } else if (varName == 1){
+        print("COCUOU");
+    } else {
+        #print("cc");
+    };
+
+    #print(incr(varName));
     incr(varName);
+    print("FIN");
 };
-a=1;
+a=0;
 print(a);
 incr(a);
 print(a);
