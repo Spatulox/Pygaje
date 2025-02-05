@@ -1,4 +1,2 @@
 -------------------------------
-Faut rajouter un système de commentaires
--------------------------------
 Trouver le moyen de transformer une fonction récursive en while (lol)
