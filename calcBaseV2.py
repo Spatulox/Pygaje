@@ -91,10 +91,15 @@ def t_ID(t):
     t.type = reserved.get(t.value, 'NAME')
     return t
 
+def t_COMMENT(t):
+    r'(\#|\/\/).*|\/\*[\s\S]*?\*\/'
+    #t.lexer.lineno += t.value.count('\n')
+    pass
+
 
 def t_REFNAME(t):
     r'&[a-zA-Z_][a-zA-Z_0-9]*'
-    t.value = t.value[1:]  # Enlève le '&' du début
+    t.value = t.value[1:]  # Enlève le '&'
     t.type = reserved.get(t.value, 'REFNAME')
     return t
 

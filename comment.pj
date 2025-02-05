@@ -1,0 +1,4 @@
+# Ceci est un commentaire
+a=12;
+# deuxième comm
+print(a);
