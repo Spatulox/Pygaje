@@ -86,9 +86,10 @@ def evalPerso(tupleVar):
                 exitScope()
                 if check is not None:
                     return check
+                return result
             else :
                 if tupleVar[3] and isinstance(tupleVar[3], tuple):
-                    evalPerso(tupleVar[3])
+                    return evalPerso(tupleVar[3])
 
         case 'else':
             enterScope()
@@ -97,6 +98,7 @@ def evalPerso(tupleVar):
             exitScope()
             if check is not None:
                 return check
+            return result
 
         # -------------------- Boucles --------------------
 
@@ -379,9 +381,8 @@ def evalPerso(tupleVar):
                 while isinstance(check, tuple) and check and check[0] == "return":
                     if len(check) > 1:
                         check = check[1]
-                    else:
-                        check = None
-                return check
+                return evalPerso(check)
+            return result
 
         # -------------------- Fonctions prédéfinies --------------------
 
@@ -478,7 +479,7 @@ def checkBreakReturn(tmp):
     if isinstance(tmp, tuple):
         if tmp[0] == "return":
             if len(tmp) > 1:
-                return ("return", tmp[1])
+                return ("return", evalPerso(tmp[1]))
             else:
                 return ("return",)
         elif tmp[0] == "break":
