@@ -417,9 +417,9 @@ def evalPerso(tupleVar):
             # fin if
             else:
                 result = evalPerso(body)
-                handle_class_method_variables(tupleVar)
-                update_reference_variables(ref_params)
-                exitScope()
+            handle_class_method_variables(tupleVar)
+            update_reference_variables(ref_params)
+            exitScope()
             return process_function_result(result)
 
         # -------------------- Fonctions prédéfinies --------------------
