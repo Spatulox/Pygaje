@@ -313,20 +313,35 @@ def evalPerso(tupleVar):
             validate_function_args(tupleVar[1], params, args)
             ref_params = setup_function_variables(params, args)
 
-            is_recursive = detect_recursion(body, tupleVar[1])
+            is_recursive, parent = detect_recursion(body, tupleVar[1], None)
+            result = None
             if is_recursive:
-                whenRecursiveFunctionBegin = len(variables)
-                # On "applati" le tuple pour en faire une liste de block
-                depil_block = []
-                result = None
-                def process_element(element):
-                    if isinstance(element, tuple) and element[0] == 'block':
-                        for sub_element in element[1:]:
-                            process_element(sub_element)
-                    else:
-                        depil_block.append(('block', element))
 
-                process_element(body)
+                whenRecursiveFunctionBegin = len(variables)
+                # On "applati" le tuple pour en faire une liste de block, en supprimant le parent de l'appel récursif
+                def process_element(element, function_name):
+                    depil_block = []
+
+                    def _process(el, parent=None):
+                        if isinstance(el, tuple):
+                            if el[0] == 'block':
+                                for sub_el in el[1:]:
+                                    _process(sub_el, el[0])
+                            elif parent != 'block' and isinstance(el[1], tuple) and el[1][0] == 'call' and el[1][1] == function_name:
+                                depil_block.append(('block', el[1]))
+                            elif parent == 'block':
+                                depil_block.append(('block', el))
+                            else:
+                                for sub_el in el:
+                                    _process(sub_el, el[0])
+                        else:
+                            if parent == 'block':
+                                depil_block.append(('block', el))
+
+                    _process(element)
+                    return depil_block
+
+                depil_block = process_element(body, tupleVar[1])
 
                 i = 0
                 i_bkp = []
@@ -346,6 +361,10 @@ def evalPerso(tupleVar):
 
                 print(depil_block)
                 while whenRecursiveFunctionBegin <= len(variables) or i < len(depil_block):
+                    get_bkp_i = False
+                    if(len(depil_block) <= i):
+                        print("welp")
+                        exit()
                     the_block = depil_block[i][1]
                     if isinstance(the_block, tuple):
                         if the_block[0] == 'call':
@@ -356,8 +375,9 @@ def evalPerso(tupleVar):
                             return_value = evalPerso(the_block[1]) if len(the_block) > 1 else None
                             i_bkp.pop()
                             exitScope()
-                            if i_bkp:
-                                i = i_bkp[-1] # On est sorti de la "dernière itération de la fonction recursive,
+                            if len(i_bkp) > 1:
+                                i_bkp.pop()
+                                get_bkp_i = True # On est sorti de la "dernière itération de la fonction recursive,
                                               # alors on repart là où on en était de la fonction recu précédente
                             else:
                                 break
@@ -365,49 +385,57 @@ def evalPerso(tupleVar):
                             result = handle_control_structure(the_block)
                             if isinstance(result, tuple) and result[0] == 'return':
                                 if len(result) > 1:
-                                    # faire des truc
-                                    print("Len long")
-                                    print(result)
-                                    #exit()
-                                i_bkp.pop()
+                                    if isinstance(parent, tuple) and parent[0] == "print":
+                                        evalPerso((parent[0], result[1]))
+                                    elif isinstance(parent, tuple) and parent[0] == '=':
+                                        return_value = evalPerso(the_block[1]) if len(the_block) > 1 else None
+                                        print("welp = 1")
+                                        exit()
                                 exitScope()
                                 if i_bkp:
-                                    i = i_bkp[-1] # On est sorti de la "dernière itération de la fonction recursive,
+                                    i_bkp.pop()
+                                    get_bkp_i = True # On est sorti de la "dernière itération de la fonction recursive,
                                                   # alors on repart là où on en était de la fonction recu précédente
                                 else:
                                     break
                         else:
                             evalPerso(the_block)
                             if i == len(depil_block)-1:
-                                i_bkp.pop()
                                 exitScope()
-                                if i_bkp:
-                                    i = i_bkp[-1] # On est sorti de la "dernière itération de la fonction recursive,
+                                if len(i_bkp) > 1:
+                                    get_bkp_i = True
+                                    i_bkp.pop() # On est sorti de la "dernière itération de la fonction recursive,
                                                   # alors on repart là où on en était de la fonction recu précédente
                                 else:
                                     break
-                    else:
-                        result = evalPerso(the_block)
-                        check = checkBreakReturn(result)
-                        if check is not None:
-                            if isinstance(check, tuple) and check[0] == 'return':
-                                return_value = check[1] if len(check) > 1 else None
-                                print("RETURN wtf")
-                                if len(result) > 1:
-                                    # faire des truc
-                                    print("Len long")
-                                    exit()
+                    # else:
+                    #     result = evalPerso(the_block)
+                    #     check = checkBreakReturn(result)
+                    #     if check is not None:
+                    #         if isinstance(check, tuple) and check[0] == 'return':
+                    #             return_value = check[1] if len(check) > 1 else None
+                    #             print("RETURN wtf")
+                    #             if len(result) > 1:
+                    #                 if isinstance(parent, tuple) and parent[0] == "print":
+                    #                     evalPerso((parent[0], result[1]))
+                    #                 elif isinstance(parent, tuple) and parent[0] == '=':
+                    #                     return_value = evalPerso(the_block[1]) if len(the_block) > 1 else None
+                    #                     print("welp = 2")
+                    #                     exit()
                                 # Toujours update les variables parent
-
+                    if get_bkp_i == True :
+                        i = i_bkp[-1]
                     i += 1
-
+                    # fin while
+                return_value = return_value if return_value is not None else result
+                return_value = return_value[1] if isinstance(return_value, tuple) else return_value
+                result = evalPerso(return_value)
+            # fin if
+            else:
+                result = evalPerso(body)
+                handle_class_method_variables(tupleVar)
+                update_reference_variables(ref_params)
                 exitScope()
-                return return_value if return_value is not None else result
-
-            result = evalPerso(body)
-            handle_class_method_variables(tupleVar)
-            update_reference_variables(ref_params)
-            exitScope()
             return process_function_result(result)
 
         # -------------------- Fonctions prédéfinies --------------------
@@ -699,31 +727,31 @@ def process_function_result(result):
         return evalPerso(check)
     return result
 
-def detect_recursion(body, function_name):
+def detect_recursion(body, function_name, parent=None):
     if isinstance(body, tuple):
         if body[0] == 'call' and body[1] == function_name:
-            return True
+            return True, parent
 
-        if body[0] in ['if', 'elif', 'else']:
-            for part in body[1:]:
-                if detect_recursion(part, function_name):
-                    return True
+        new_parent = body if body[0] in ['=', 'print'] else parent
 
-        for element in body:
-            if detect_recursion(element, function_name):
-                return True
+        for element in body[1:]:  # Start from index 1 to skip the first element
+            result, context = detect_recursion(element, function_name, new_parent)
+            if result:
+                return True, context
 
     elif isinstance(body, list):
         for element in body:
-            if detect_recursion(element, function_name):
-                return True
+            result, context = detect_recursion(element, function_name, parent)
+            if result:
+                return True, context
 
     elif isinstance(body, dict):
         for value in body.values():
-            if detect_recursion(value, function_name):
-                return True
+            result, context = detect_recursion(value, function_name, parent)
+            if result:
+                return True, context
 
-    return False
+    return False, None
 
 def debug():
     evalPerso(("debug",))
