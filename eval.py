@@ -359,12 +359,9 @@ def evalPerso(tupleVar):
                                 return check[1]
                         return res
 
-                print(depil_block)
+                get_bkp_i = False
                 while whenRecursiveFunctionBegin <= len(variables) or i < len(depil_block):
-                    get_bkp_i = False
-                    if(len(depil_block) <= i):
-                        print("welp")
-                        exit()
+
                     the_block = depil_block[i][1]
                     if isinstance(the_block, tuple):
                         if the_block[0] == 'call':
@@ -408,23 +405,10 @@ def evalPerso(tupleVar):
                                                   # alors on repart là où on en était de la fonction recu précédente
                                 else:
                                     break
-                    # else:
-                    #     result = evalPerso(the_block)
-                    #     check = checkBreakReturn(result)
-                    #     if check is not None:
-                    #         if isinstance(check, tuple) and check[0] == 'return':
-                    #             return_value = check[1] if len(check) > 1 else None
-                    #             print("RETURN wtf")
-                    #             if len(result) > 1:
-                    #                 if isinstance(parent, tuple) and parent[0] == "print":
-                    #                     evalPerso((parent[0], result[1]))
-                    #                 elif isinstance(parent, tuple) and parent[0] == '=':
-                    #                     return_value = evalPerso(the_block[1]) if len(the_block) > 1 else None
-                    #                     print("welp = 2")
-                    #                     exit()
-                                # Toujours update les variables parent
+
                     if get_bkp_i == True :
                         i = i_bkp[-1]
+                        get_bkp_i = False
                     i += 1
                     # fin while
                 return_value = return_value if return_value is not None else result
