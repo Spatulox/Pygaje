@@ -56,6 +56,12 @@ def evalPerso(tupleVar):
             return evalPerso(tupleVar[1]) - evalPerso(tupleVar[2])
         case '+':
             return evalPerso(tupleVar[1]) + evalPerso(tupleVar[2])
+        case '%':
+            result = evalPerso(tupleVar[2])
+            if result == 0:
+                print("Error, Impossible to do a modulo by 0")
+                exit(1)
+            return evalPerso(tupleVar[1]) % result
 
         # -------------------- Conditions --------------------
 
@@ -82,19 +88,21 @@ def evalPerso(tupleVar):
                 result = evalPerso(tupleVar[2])
                 check = checkBreakReturn(result)
                 exitScope()
-                if check:
+                if check is not None:
                     return check
+                return result
             else :
                 if tupleVar[3] and isinstance(tupleVar[3], tuple):
-                    evalPerso(tupleVar[3])
+                    return evalPerso(tupleVar[3])
 
         case 'else':
             enterScope()
             result = evalPerso(tupleVar[1])
             check = checkBreakReturn(result)
             exitScope()
-            if check:
+            if check is not None:
                 return check
+            return result
 
         # -------------------- Boucles --------------------
 
@@ -104,7 +112,7 @@ def evalPerso(tupleVar):
                 result = evalPerso(tupleVar[2])
                 check = checkBreakReturn(result)
                 scope -= 1
-                if check:
+                if check is not None:
                     if check[0] == "break":
                         break
                     elif check[0] == "continue":
@@ -119,7 +127,7 @@ def evalPerso(tupleVar):
                 result = evalPerso(tupleVar[4])
                 check = checkBreakReturn(result)
                 scope -= 1
-                if check:
+                if check is not None:
                     if check[0] == "break":
                         break
                     elif check[0] == "continue":
@@ -132,7 +140,7 @@ def evalPerso(tupleVar):
             for statement in tupleVar[1:]:
                 result = evalPerso(statement)
                 check = checkBreakReturn(result)
-                if check:
+                if check is not None:
                     return check
 
         case "=":
@@ -166,14 +174,14 @@ def evalPerso(tupleVar):
 
         case 'array_access':
             array_name = tupleVar[1]
-            index = tupleVar[2]
+            index = evalPerso(tupleVar[2])
             for current_scope in reversed(variables):
                 if array_name in current_scope:
                     return current_scope[array_name][index]
 
         case 'array_replace':
             array_name = tupleVar[1]
-            index = tupleVar[2]
+            index = evalPerso(tupleVar[2])
             value = evalPerso(tupleVar[3])
             for current_scope in reversed(variables):
                 if array_name in current_scope:
@@ -270,7 +278,7 @@ def evalPerso(tupleVar):
             elif isinstance(tupleVar[2], tuple):
                 result = evalPerso(("call", tupleVar[2][1], tupleVar[2][2], tupleVar[1]))
                 check = checkBreakReturn(result)
-                if check:
+                if check is not None:
                     return check
                 return result
             print("This attribute doesn't exist in this class")
@@ -370,16 +378,15 @@ def evalPerso(tupleVar):
             dontCreateAnotherVar = False
             exitScope()
 
-            if check:
+            if check is not None:
                 if isinstance(check, tuple) and check and check[0] == "break":
                     print("break statement cannot be in a function")
                     exit(1)
                 while isinstance(check, tuple) and check and check[0] == "return":
                     if len(check) > 1:
                         check = check[1]
-                    else:
-                        check = None
-                return check
+                return evalPerso(check)
+            return result
 
         # -------------------- Fonctions prédéfinies --------------------
 
@@ -476,7 +483,7 @@ def checkBreakReturn(tmp):
     if isinstance(tmp, tuple):
         if tmp[0] == "return":
             if len(tmp) > 1:
-                return ("return", tmp[1])
+                return ("return", evalPerso(tmp[1]))
             else:
                 return ("return",)
         elif tmp[0] == "break":

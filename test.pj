@@ -1,16 +1,16 @@
-function fibonacci(n) {
+function fibonacci(n){
     if (n <= 1) {
         return n;
     } else {
         return fibonacci(n-1) + fibonacci(n-2);
-    }
-}
+    };
+};
 
-function printArray(arr) {
+function printArray(arr){
     for (i = 0; i < 5; i = i + 1) {
         print arr[i];
-    }
-}
+    };
+};
 
 numbers = [0, 1, 2, 3, 4];
 print "Original array:";
@@ -20,8 +20,7 @@ i = 0;
 while (i < 5) {
     numbers[i] = fibonacci(i);
     i = i + 1;
-}
-
+};
 print("Array after Fibonacci:");
 printArray(numbers);
 
@@ -31,8 +30,8 @@ for (i = 0; i < 5; i = i + 1) {
     if (sum > 10) {
         print "Sum exceeded 10";
         break;
-    }
-}
+    };
+};
 
 print("Final sum:");
 print(sum);
@@ -41,6 +40,6 @@ if (sum % 2 == 0) {
     print "Sum is even";
 } else {
     print "Sum is odd";
-}
+};
 
 exit;
