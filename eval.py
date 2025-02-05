@@ -168,14 +168,14 @@ def evalPerso(tupleVar):
 
         case 'array_access':
             array_name = tupleVar[1]
-            index = tupleVar[2]
+            index = evalPerso(tupleVar[2])
             for current_scope in reversed(variables):
                 if array_name in current_scope:
                     return current_scope[array_name][index]
 
         case 'array_replace':
             array_name = tupleVar[1]
-            index = tupleVar[2]
+            index = evalPerso(tupleVar[2])
             value = evalPerso(tupleVar[3])
             for current_scope in reversed(variables):
                 if array_name in current_scope:
