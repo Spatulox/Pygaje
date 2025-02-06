@@ -1,0 +1,16 @@
+Pour les fonctions recursive... c'est le  GIGA		BORDEL !
+
+Python, dans sa grande sagesse, limite les récursions à 1000 par défaut., comment contourner cette limite ? Simple ! On transforme notre belle fonction récursive en un monstre itératif.
+Une fonction récursive, c'est juste une liste d'instructions a éxécuter, donc pourquoi pas utiliser une boucle while comme une boucle for mais avec un indice i géré à la main. Bonne idée non ?
+Première étape : détecter la récursion dans le corps de la fonction.
+Ensuite, on aplatit le tuple pour le mettre en liste. Comment ? Avec une fonction... récursive ! Oui oui... On résout la récursion avec de la récursion. C'est comme éteindre un feu avec de l'essence ! (WELP), donc si ta fonction recursive fait plus de deux cents lignes, ca va pas fonctionner a cause d'une sécurité python..
+
+Reprenons.. Quand notre fonction s'appelle elle-même, on retourne à l'indice i = 0 (de la liste des instructions), On a donc besoin d'une AUTRE LISTE pour sauvegarder les indices 'i' et gérer où on en est dans la fonction récursive précédente.
+
+Et là... on entre dans le Spaghetti Code Apocalypse ! LE CHAOS QUANTIQUE PROGRAMMATIONNEL !
+
+Pour gérer les retours des fonctions récursives, on exécute d'abord la fonction récursive, puis on utilise ce retour pour exécuter l'instruction d'avant. Simple, non ? AH BAH NON ! Il faut aussi séparer les parents de la fonction récursive dans la liste des instructions, BAH OUI, sinon ca va pas être pris comme une fonction recursive, ca va executer le block entier, et donc tomber dans une while infini !
+Et comme si ce n'était pas assez fun, ces parents peuvent être imbriqués les uns dans les autres. print(test(func_recur())) ? Pas de problème, on gère ça avec une AUTRE LISTE ! Cette liste, rangé de manière logique et totalement fait AU HASARD, à le parent le plus proche en premier, plus on s'éloigne, puis le parent est loin..
+Enfin, quand on exécute la liste des instructions et qu'on tombe sur l'appel récursif, on l'exécute, on vérifie la liste des parents, on remplace les valeurs, on exécute, on supprime... et on recommence !
+
+Le seul cas, qui n'est pas géré, c'est évidemment.... l'apelle d'une fonction recursive par ELLE MEME, j'ai abandonné, j'ai pas envie de me retrouver au même niveau qu'un Tsunami Administratif
