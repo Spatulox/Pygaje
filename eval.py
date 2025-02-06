@@ -390,7 +390,6 @@ def evalPerso(tupleVar):
                 while whenRecursiveFunctionBegin <= len(variables) or i < len(depil_block):
                     found_return = False
                     the_block = depil_block[i][1]
-                    #print(the_block)
                     if isinstance(the_block, tuple):
                         if the_block[0] == 'call' and the_block[1] == tupleVar[1]:
                             curr_ref = depil_block[i][2]
