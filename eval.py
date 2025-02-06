@@ -757,7 +757,9 @@ def detect_recursion(body, function_name, parent_stack=None):
 
     if isinstance(body, tuple):
         if body[0] == 'call' and body[1] == function_name:
-            return True, parent_stack[0]
+            if len(parent_stack) > 0:
+                return True, parent_stack[0]
+            return True, parent_stack
 
         new_parent_stack = parent_stack + [body] if body[0] in ['=', 'print', 'call'] else parent_stack
 
