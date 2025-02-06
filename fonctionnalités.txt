@@ -18,7 +18,7 @@ CLASSES :
 FONCTIONS :
 - Fonction void/return
 - Fonctions avec/sans paramètres
-- Fonctions récursives
+- Fonctions récursives (gérée avec un while)
 - Passage par référence (c'est une copie dans le scope suivant (pour "lier" la nouvelle variable à la var parent), puis remplacement de la valeur originale par la copie à la fin de la fonction)
 - Gestion des Erreurs
     - Pas de break dans une fonction (sans être dans une boucle)
