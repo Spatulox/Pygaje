@@ -1,10 +1,14 @@
+function test(var){
+    print(var);
+    return var;
+};
+
 function incr(&varName){
     varName+=1;
-    print(varName);
+    #print(varName);
     if(varName == 200){
         #print(a);
-        return 1;
-        exit;
+        return 1;#incr(varName);
     } else if (varName == 1){
         print("COCUOU");
     } else {
@@ -12,7 +16,15 @@ function incr(&varName){
     };
 
     #print(incr(varName));
-    incr(varName);
+    #exit;
+    #test(incr(varName), incr(varName));
+    #test(test(incr(varName)));
+    #a = test(incr(varName), incr(varName));
+    #jl = incr(varName);
+    #print(jl);
+    test(incr(varName));
+    exit;
+    #incr(varName);
     print("FIN");
 };
 a=0;
