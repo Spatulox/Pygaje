@@ -6,7 +6,7 @@ function incr(&varName){
     } else if (varName == 1){
         print("COCUOU");
     } else {
-        #print("cc");
+        print("cc");
     };
     incr(incr(varName));
     print("coucou");

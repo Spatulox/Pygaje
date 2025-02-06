@@ -1,0 +1,21 @@
+function test(var){
+    print(var);
+    return var;
+};
+
+function incr(&varName){
+    varName+=1;
+    print(varName);
+    if(varName == 200){
+        return 1;
+    } else if (varName == 1){
+        print("COCUOU");
+    } else {
+        print("cc");
+    };
+    print("coucou");
+};
+a=0;
+print(a);
+print(incr(a));
+print(a);
