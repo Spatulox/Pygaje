@@ -322,70 +322,10 @@ def evalPerso(tupleVar):
 
                 whenRecursiveFunctionBegin = len(variables)
                 # On "applati" le tuple pour en faire une liste de block, en supprimant le parent de l'appel récursif
-                def flatten_and_extract_incr(body, function_name):
-                    flattened = []
-                    parent_calls = []
-                    ref_counter = 0
-
-                    def process_tuple(tup, parent=None):
-                        nonlocal ref_counter
-                        if isinstance(tup, tuple):
-                            if tup[0] == 'block':
-                                for item in tup[1:]:
-                                    process_tuple(item, tup)
-                            elif tup[0] == 'call':
-                                new_args = []
-                                for arg in tup[2]:
-                                    new_arg = process_tuple(arg, tup)
-                                    new_args.append(new_arg if new_arg is not None else arg)
-
-                                if tup[1] == function_name:
-                                    ref = f'REFERENCE{ref_counter}'
-                                    ref_counter += 1
-                                    flattened.append(('block', (tup[0], tup[1], new_args), ref))
-                                    return ref
-                                else:
-                                    new_call = (tup[0], tup[1], new_args)
-                                    parent_calls.append(new_call)
-                                    return new_call
-                            elif tup[0] in ['=', 'print', 'return']:
-                                new_value = process_tuple(tup[1], tup) if len(tup) > 1 else None
-                                if new_value is not None:
-                                    new_tup = (tup[0], new_value)
-                                    parent_calls.append(new_tup)
-                                    return new_tup
-                                else:
-                                    flattened.append(('block', tup))
-                            else:
-                                flattened.append(('block', tup))
-                        elif isinstance(tup, list):
-                            new_list = [process_tuple(item, tup) or item for item in tup]
-                            return new_list
-                        return None
-
-                    process_tuple(body)
-
-                    return flattened, parent_calls
-
                 depil_block, parent = flatten_and_extract_incr(body, tupleVar[1])
                 i = 0
                 i_bkp = []
                 return_value = None
-
-                print(depil_block)
-                print(parent)
-                #exit()
-                def handle_control_structure(structure):
-                    global dontCreateAnotherVar
-                    if structure[0] == 'if':
-                        return evalPerso(structure)
-                    elif structure[0] == 'for' or structure[0] == 'while':
-                        res = evalPerso(structure)
-                        check = checkBreakReturn(res)
-                        if check is not None:
-                            if isinstance(check, tuple) and check[0] == 'return':
-                                return check[1]
-                        return res
 
                 get_bkp_i = False
                 while whenRecursiveFunctionBegin <= len(variables) or i < len(depil_block):
@@ -827,3 +767,62 @@ def debug():
 
 def pritn(value):
     print(value)
+
+
+def flatten_and_extract_incr(body, function_name):
+    flattened = []
+    parent_calls = []
+    ref_counter = 0
+
+    def process_tuple(tup, parent=None):
+        nonlocal ref_counter
+        if isinstance(tup, tuple):
+            if tup[0] == 'block':
+                for item in tup[1:]:
+                    process_tuple(item, tup)
+            elif tup[0] == 'call':
+                new_args = []
+                for arg in tup[2]:
+                    new_arg = process_tuple(arg, tup)
+                    new_args.append(new_arg if new_arg is not None else arg)
+
+                if tup[1] == function_name:
+                    ref = f'REFERENCE{ref_counter}'
+                    ref_counter += 1
+                    flattened.append(('block', (tup[0], tup[1], new_args), ref))
+                    return ref
+                else:
+                    new_call = (tup[0], tup[1], new_args)
+                    parent_calls.append(new_call)
+                    return new_call
+            elif tup[0] in ['=', 'print', 'return']:
+                new_value = process_tuple(tup[1], tup) if len(tup) > 1 else None
+                if new_value is not None:
+                    new_tup = (tup[0], new_value)
+                    parent_calls.append(new_tup)
+                    return new_tup
+                else:
+                    flattened.append(('block', tup))
+            else:
+                flattened.append(('block', tup))
+        elif isinstance(tup, list):
+            new_list = [process_tuple(item, tup) or item for item in tup]
+            return new_list
+        return None
+
+    process_tuple(body)
+
+    return flattened, parent_calls
+
+
+def handle_control_structure(structure):
+    global dontCreateAnotherVar
+    if structure[0] == 'if':
+        return evalPerso(structure)
+    elif structure[0] == 'for' or structure[0] == 'while':
+        res = evalPerso(structure)
+        check = checkBreakReturn(res)
+        if check is not None:
+            if isinstance(check, tuple) and check[0] == 'return':
+                return check[1]
+        return res
