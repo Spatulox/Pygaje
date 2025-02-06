@@ -1,5 +1,4 @@
 import copy
-from pydoc import replace
 
 from ply import yacc
 
