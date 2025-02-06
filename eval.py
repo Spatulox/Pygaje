@@ -388,6 +388,7 @@ def evalPerso(tupleVar):
 
                 get_bkp_i = False
                 while whenRecursiveFunctionBegin <= len(variables) or i < len(depil_block):
+                    found_return = False
                     the_block = depil_block[i][1]
                     #print(the_block)
                     if isinstance(the_block, tuple):
@@ -397,8 +398,6 @@ def evalPerso(tupleVar):
                             enterScope()
                             i = -1  # recommence au début de la liste (car récursif)
                         elif the_block[0] == "return":
-                            print("ON PASS LA")
-                            exit()
                             return_value = evalPerso(the_block[1]) if len(the_block) > 1 else None
                             i_bkp.pop()
                             exitScope()
@@ -426,6 +425,14 @@ def evalPerso(tupleVar):
                                             tup[2] = [result[1] if x == curr_ref else x for x in tup[2]]
                                             tup = tuple(tup)
                                             evalPerso((tup[0], tup[1], tup[2]))
+                                        elif tup[0] == 'return':
+                                            return_value = evalPerso((tup[0], result[1]))
+                                            while len(i_bkp)>1:
+                                                exitScope()
+                                                i_bkp.pop()
+                                            i_bkp.pop()
+                                            found_return = True
+                                            break
 
                                 if i_bkp:
                                     i_bkp.pop()
@@ -443,6 +450,9 @@ def evalPerso(tupleVar):
                                                   # alors on repart là où on en était de la fonction recu précédente
                                 else:
                                     break
+
+                    if found_return:
+                        break
 
                     if get_bkp_i == True :
                         i = i_bkp[-1]
