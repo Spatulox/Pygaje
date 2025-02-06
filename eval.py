@@ -314,73 +314,54 @@ def evalPerso(tupleVar):
             ref_params = setup_function_variables(params, args)
 
             is_recursive, parent = detect_recursion(body, tupleVar[1], None)
-
-            def match_structure(pattern, target):
-                if isinstance(pattern, tuple) and isinstance(target, tuple):
-                    if len(pattern) < 2 or len(target) < 2:
-                        return False
-                    return pattern[0] == target[0] == 'call' and pattern[1] == target[1]
-                return False
-
-            def find_and_replace(structure, pattern, replacement):
-                if match_structure(pattern, structure):
-                    return replacement
-                elif isinstance(structure, tuple):
-                    return tuple(find_and_replace(item, pattern, replacement) for item in structure)
-                elif isinstance(structure, list):
-                    return [find_and_replace(item, pattern, replacement) for item in structure]
-                else:
-                    return structure
-
-            parent = find_and_replace(parent, (tupleVar[0], tupleVar[1]), "RECURSIVE_CALL_PLACEHOLDER")
-
             result = None
             if is_recursive:
 
                 whenRecursiveFunctionBegin = len(variables)
                 # On "applati" le tuple pour en faire une liste de block, en supprimant le parent de l'appel récursif
-                def process_element(element, function_name, parent=None):
-                    depil_block = []
-                    RECURSIVE_CALL_PLACEHOLDER = "RECURSIVE_CALL_PLACEHOLDER"
+                def flatten_and_extract_incr(body, function_name):
+                    flattened = []
+                    parent_calls = []
+                    ref_counter = 0
 
-                    def _process(el, current_parent=None):
-                        if isinstance(el, tuple):
-                            if el[0] == 'block':
-                                new_block = ['block']
-                                for sub_el in el[1:]:
-                                    result = _process(sub_el, el)
-                                    if result != RECURSIVE_CALL_PLACEHOLDER:
-                                        new_block.append(result)
-                                return tuple(new_block)
-                            elif el[0] == 'call' and el[1] == function_name:
-                                # Retourner directement le tuple 'call' sans ses parents
-                                return el
-                            elif el[0] in ['call', '=', 'print']:
-                                new_el = list(el)
-                                for i, sub_el in enumerate(el[1:], 1):
-                                    result = _process(sub_el, el)
-                                    if isinstance(result, tuple) and result[0] == 'call' and result[1] == function_name:
-                                        # Remplacer l'appel de fonction par ses arguments
-                                        new_el[i:] = list(result[2])
-                                    elif result != RECURSIVE_CALL_PLACEHOLDER:
-                                        new_el[i] = result
-                                return tuple(new_el)
+                    def process_tuple(tup, parent=None):
+                        nonlocal ref_counter
+                        if isinstance(tup, tuple):
+                            if tup[0] == 'block':
+                                for item in tup[1:]:
+                                    process_tuple(item, tup)
+                            elif tup[0] == 'call':
+                                new_args = []
+                                for arg in tup[2]:
+                                    if isinstance(arg, tuple) and arg[0] == 'call' and arg[1] == function_name:
+                                        ref = f'REFERENCE{ref_counter}'
+                                        ref_counter += 1
+                                        flattened.append(('block', arg, ref))
+                                        new_args.append(ref)
+                                    else:
+                                        new_arg = process_tuple(arg, tup)
+                                        new_args.append(new_arg if new_arg is not None else arg)
+
+                                if tup[1] == function_name:
+                                    ref = f'REFERENCE{ref_counter}'
+                                    ref_counter += 1
+                                    flattened.append(('block', (tup[0], tup[1], new_args), ref))
+                                    return ref
+                                else:
+                                    parent_calls.append((tup[0], tup[1], new_args))
+                                    return (tup[0], tup[1], new_args)
                             else:
-                                return el
-                        else:
-                            return el
+                                flattened.append(tup)
+                        return None
 
-                    result = _process(element)
-                    if result != RECURSIVE_CALL_PLACEHOLDER and result[0] == 'block':
-                        depil_block.extend(result[1:])
-                    elif result != RECURSIVE_CALL_PLACEHOLDER:
-                        depil_block.append(result)
+                    process_tuple(body)
 
-                    return depil_block
+                    return flattened, parent_calls
 
-                depil_block = process_element(body, tupleVar[1])
+                depil_block, parent = flatten_and_extract_incr(body, tupleVar[1])
                 print(body)
                 print(depil_block)
+                print(len(depil_block))
                 print(parent)
                 exit()
                 i = 0
