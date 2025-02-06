@@ -1,4 +1,5 @@
 import copy
+from pydoc import replace
 
 from ply import yacc
 
@@ -9,10 +10,12 @@ scope = 0
 definingParentClass = False
 dontCreateAnotherVar = False
 whenRecursiveFunctionBegin = len(variables)
+reference = {} # recursive function retun value
+curr_ref = ""
 
 
 def evalPerso(tupleVar):
-    global scope, definingParentClass, dontCreateAnotherVar, whenRecursiveFunctionBegin
+    global scope, definingParentClass, dontCreateAnotherVar, whenRecursiveFunctionBegin, reference, curr_ref
 
     if isinstance(tupleVar, (int, float)):
         return tupleVar
@@ -333,14 +336,8 @@ def evalPerso(tupleVar):
                             elif tup[0] == 'call':
                                 new_args = []
                                 for arg in tup[2]:
-                                    if isinstance(arg, tuple) and arg[0] == 'call' and arg[1] == function_name:
-                                        ref = f'REFERENCE{ref_counter}'
-                                        ref_counter += 1
-                                        flattened.append(('block', arg, ref))
-                                        new_args.append(ref)
-                                    else:
-                                        new_arg = process_tuple(arg, tup)
-                                        new_args.append(new_arg if new_arg is not None else arg)
+                                    new_arg = process_tuple(arg, tup)
+                                    new_args.append(new_arg if new_arg is not None else arg)
 
                                 if tup[1] == function_name:
                                     ref = f'REFERENCE{ref_counter}'
@@ -350,8 +347,19 @@ def evalPerso(tupleVar):
                                 else:
                                     parent_calls.append((tup[0], tup[1], new_args))
                                     return (tup[0], tup[1], new_args)
+                            elif tup[0] in ['=', 'print', 'return']:
+                                new_value = process_tuple(tup[1], tup) if len(tup) > 1 else None
+                                if new_value is not None:
+                                    new_tup = (tup[0], new_value)
+                                    parent_calls.append(new_tup)
+                                    return new_tup
+                                else:
+                                    flattened.append(('block', tup))
                             else:
                                 flattened.append(('block', tup))
+                        elif isinstance(tup, list):
+                            new_list = [process_tuple(item, tup) or item for item in tup]
+                            return new_list
                         return None
 
                     process_tuple(body)
@@ -362,6 +370,9 @@ def evalPerso(tupleVar):
                 i = 0
                 i_bkp = []
                 return_value = None
+
+                print(depil_block)
+                print(parent)
 
                 def handle_control_structure(structure):
                     global dontCreateAnotherVar
@@ -378,12 +389,16 @@ def evalPerso(tupleVar):
                 get_bkp_i = False
                 while whenRecursiveFunctionBegin <= len(variables) or i < len(depil_block):
                     the_block = depil_block[i][1]
+                    #print(the_block)
                     if isinstance(the_block, tuple):
                         if the_block[0] == 'call' and the_block[1] == tupleVar[1]:
+                            curr_ref = depil_block[i][2]
                             i_bkp.append(i)
                             enterScope()
                             i = -1  # recommence au début de la liste (car récursif)
                         elif the_block[0] == "return":
+                            print("ON PASS LA")
+                            exit()
                             return_value = evalPerso(the_block[1]) if len(the_block) > 1 else None
                             i_bkp.pop()
                             exitScope()
@@ -395,17 +410,23 @@ def evalPerso(tupleVar):
                                 break
                         elif the_block[0] in ['if', 'for', 'while']:
                             result = handle_control_structure(the_block)
-                            if isinstance(result, tuple) and result[0] == 'return':
+                            if isinstance(result, tuple) and result[0] == 'return': # un return dans un autre bloc que la racine de la fonction
                                 if len(result) > 1:
-                                    if isinstance(parent, tuple) and parent[0] == "print":
-                                        evalPerso((parent[0], result[1]))
-                                    elif isinstance(parent, tuple) and parent[0] == '=':
-                                        return_value = evalPerso(the_block[1]) if len(the_block) > 1 else None
-                                        print(parent)
-                                        print(the_block)
-                                        print("welp = 1")
-                                        exit()
-                                exitScope()
+                                    reference[curr_ref] = result[1]
+                                exitScope() # On évalue le parent, donc le scope au dessus (problème de création de var sinon)
+                                if parent:
+                                    for tup in parent:
+                                        if tup[0] == 'print':
+                                            evalPerso((tup[0], result[1]))
+                                        elif tup[0] == '=':
+                                            print((tup[0], tup[1], result[1]))
+                                            evalPerso((tup[0], tup[1], result[1]))
+                                        elif tup[0] == 'call':
+                                            tup = list(tup)
+                                            tup[2] = [result[1] if x == curr_ref else x for x in tup[2]]
+                                            tup = tuple(tup)
+                                            evalPerso((tup[0], tup[1], tup[2]))
+
                                 if i_bkp:
                                     i_bkp.pop()
                                     get_bkp_i = True # On est sorti de la "dernière itération de la fonction recursive,
@@ -422,8 +443,7 @@ def evalPerso(tupleVar):
                                                   # alors on repart là où on en était de la fonction recu précédente
                                 else:
                                     break
-                    else :
-                        evalPerso(the_block)
+
                     if get_bkp_i == True :
                         i = i_bkp[-1]
                         get_bkp_i = False
@@ -762,3 +782,6 @@ def detect_recursion(body, function_name, parent_stack=None):
 
 def debug():
     evalPerso(("debug",))
+
+def pritn(value):
+    print(value)
