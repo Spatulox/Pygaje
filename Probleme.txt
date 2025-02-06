@@ -1,2 +1,10 @@
 -------------------------------
 Trouver le moyen de transformer une fonction récursive en while (lol)
+
+
+
+Problème de Parent imbriqué les un dans les autres : (double)
+    test(test(incr(varName)));
+
+Problème lorsque deux paramètres :
+    test(incr(varName), incr(varName))
