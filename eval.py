@@ -377,9 +377,7 @@ def evalPerso(tupleVar):
                                             new_tup = (tup[0], tup[1], new_args)
                                             result = evalPerso(new_tup)
 
-                                            if result is not None and isinstance(result, tuple) and result[
-                                                0] == 'return':
-                                                # Traiter le retour de la fonction récursive
+                                            if result is not None and isinstance(result, tuple) and result[0] == 'return':
                                                 return_value = result[1]
                                                 found_return = True
                                                 break
