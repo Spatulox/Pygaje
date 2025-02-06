@@ -351,7 +351,7 @@ def evalPerso(tupleVar):
                                     parent_calls.append((tup[0], tup[1], new_args))
                                     return (tup[0], tup[1], new_args)
                             else:
-                                flattened.append(tup)
+                                flattened.append(('block', tup))
                         return None
 
                     process_tuple(body)
@@ -359,11 +359,6 @@ def evalPerso(tupleVar):
                     return flattened, parent_calls
 
                 depil_block, parent = flatten_and_extract_incr(body, tupleVar[1])
-                print(body)
-                print(depil_block)
-                print(len(depil_block))
-                print(parent)
-                exit()
                 i = 0
                 i_bkp = []
                 return_value = None
@@ -382,7 +377,6 @@ def evalPerso(tupleVar):
 
                 get_bkp_i = False
                 while whenRecursiveFunctionBegin <= len(variables) or i < len(depil_block):
-
                     the_block = depil_block[i][1]
                     if isinstance(the_block, tuple):
                         if the_block[0] == 'call' and the_block[1] == tupleVar[1]:
@@ -407,6 +401,8 @@ def evalPerso(tupleVar):
                                         evalPerso((parent[0], result[1]))
                                     elif isinstance(parent, tuple) and parent[0] == '=':
                                         return_value = evalPerso(the_block[1]) if len(the_block) > 1 else None
+                                        print(parent)
+                                        print(the_block)
                                         print("welp = 1")
                                         exit()
                                 exitScope()
@@ -426,7 +422,8 @@ def evalPerso(tupleVar):
                                                   # alors on repart là où on en était de la fonction recu précédente
                                 else:
                                     break
-
+                    else :
+                        evalPerso(the_block)
                     if get_bkp_i == True :
                         i = i_bkp[-1]
                         get_bkp_i = False
