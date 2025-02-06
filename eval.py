@@ -319,14 +319,13 @@ def evalPerso(tupleVar):
             is_recursive, parent = detect_recursion(body, tupleVar[1], None)
             result = None
             if is_recursive:
-
+                enterScope() # pour éviter un problème de scop supprimé en trop, comme j'ai pas trouvé où bé voilà, on palie comme on peut (WELP)
                 whenRecursiveFunctionBegin = len(variables)
                 # On "applati" le tuple pour en faire une liste de block, en supprimant le parent de l'appel récursif
                 depil_block, parent = flatten_and_extract_incr(body, tupleVar[1])
                 i = 0
                 i_bkp = []
                 return_value = None
-
                 get_bkp_i = False
                 while whenRecursiveFunctionBegin <= len(variables) or i < len(depil_block):
                     found_return = False
@@ -431,6 +430,7 @@ def evalPerso(tupleVar):
                         get_bkp_i = False
                     i += 1
                     # fin while
+
                 return_value = return_value if return_value is not None else result
                 return_value = return_value[1] if isinstance(return_value, tuple) else return_value
                 result = evalPerso(return_value)
