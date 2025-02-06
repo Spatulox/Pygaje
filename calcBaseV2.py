@@ -33,6 +33,7 @@ reserved = {
 }
 
 precedence = (
+    ('right', 'ASSIGN'),
     ('left', 'OR'),
     ('left', 'AND'),
     ('nonassoc', 'CONDITIONS'),
@@ -135,24 +136,21 @@ import ply.lex as lex
 
 lex.lex()
 
-
 def p_block(p):
-    '''block : statement SEMICOLON block
+    '''block : statement
              | statement SEMICOLON
-             | statement
-             | LPAREN block RPAREN
-             | empty '''
-    if len(p) == 4 and p.slice[3].type == 'block':
-        p[0] = ('block', p[1], p[3])
-    elif len(p) == 4 and p.slice[2].type == 'block':
-        p[0] = ('block', p[2])
-    else:
+             | statement SEMICOLON block'''
+    if len(p) == 2:
         p[0] = ('block', p[1])
+    elif len(p) == 3:
+        p[0] = ('block', p[1])
+    else:
+        p[0] = ('block', p[1], p[3])
+
 
 
 def p_statement_assign(p):
-    '''statement : NAME ASSIGN expression
-    | NAME ASSIGN statement'''
+    '''statement : NAME ASSIGN statement'''
     p[0] = ("=", p[1], p[3])
 
 
@@ -173,11 +171,11 @@ def p_elseif_or_else(p):
     '''elseif_or_else : ELSE IF LPAREN expression RPAREN LBRACE block RBRACE elseif_or_else
                       | ELSE LBRACE block RBRACE
                       | empty'''
-    if len(p) == 10:  # else if case
+    if len(p) == 10:
         p[0] = ('elif', p[4], p[7], p[9])
-    elif len(p) == 5:  # else case
+    elif len(p) == 5:
         p[0] = ('else', p[3])
-    else:  # empty case
+    else:
         p[0] = None
 
 
@@ -210,10 +208,7 @@ def p_statement_print(p):
 
 
 def p_expression_condition(p):
-    '''expression : expression CONDITIONS expression
-    | expression CONDITIONS NAME
-    | NAME CONDITIONS expression
-    | NAME CONDITIONS NAME'''
+    'expression : expression CONDITIONS expression'
     p[0] = (p[2], p[1], p[3])
 
 
@@ -267,7 +262,6 @@ def p_expression_string(p):
     'expression : STRING'
     p[0] = ("string", p[1])
 
-
 def p_empty(p):
     'empty :'
     p[0] = []
@@ -318,7 +312,7 @@ def p_statement_array_acces_update(p):
     p[0] = ("array_replace", p[1], p[3], p[6])
 
 
-def p_statement_function_call(p):
+def p_expression_function_call(p):
     'expression : NAME LPAREN args RPAREN'
     p[0] = ('call', p[1], p[3])
 
@@ -367,17 +361,6 @@ def p_stringname(p):
     | STRING'''
     p[0] = p[1]
 
-
-# def p_params(p):
-#     '''params : NAME COMMA params
-#               | NAME
-#               | empty'''
-#     if len(p) == 4:
-#         p[0] = [p[1]] + p[3]
-#     elif len(p) == 2:
-#         p[0] = [p[1]]
-#     else:
-#         p[0] = []
 
 def p_params(p):
     '''params : param COMMA params
