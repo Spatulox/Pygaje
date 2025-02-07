@@ -324,7 +324,7 @@ def evalPerso(tupleVar):
                 depil_block, parent = flatten_and_extract_incr(body, tupleVar[1])
                 i = 0
                 i_bkp = []
-                return_value = None
+                return_value = ("return",)
                 get_bkp_i = False
                 while whenRecursiveFunctionBegin <= len(variables) or i < len(depil_block):
                     found_return = False
@@ -427,11 +427,12 @@ def evalPerso(tupleVar):
                         get_bkp_i = False
                     i += 1
                     # fin while
-
                 return_value = return_value if return_value is not None else result
-                return_value = return_value[1] if isinstance(return_value, tuple) else return_value
+                if return_value is not None and isinstance(return_value, tuple) and len(return_value) > 1:
+                    return_value = return_value[1] if isinstance(return_value, tuple) else return_value
                 result = evalPerso(return_value)
-            # fin if
+                # fin if
+                exitScope()
             else:
                 result = evalPerso(body)
             handle_class_method_variables(tupleVar)
@@ -725,6 +726,8 @@ def process_function_result(result):
         while isinstance(check, tuple) and check and check[0] == "return":
             if len(check) > 1:
                 check = check[1]
+            else:
+                break
         return evalPerso(check)
     return result
 

@@ -1,0 +1,13 @@
+function test(&a, v){
+    a+=1;
+    print(a);
+    v+=1;
+    print(v);
+    debug;
+};
+
+a = 2;
+v=1;
+debug;
+test(a, 2);
+debug;
