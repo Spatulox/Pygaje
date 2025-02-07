@@ -326,7 +326,7 @@ def evalPerso(tupleVar):
                 i_bkp = []
                 return_value = ("return",)
                 get_bkp_i = False
-                while whenRecursiveFunctionBegin <= len(variables) or i < len(depil_block):
+                while whenRecursiveFunctionBegin <= len(variables) and i < len(depil_block):
                     found_return = False
                     the_block = depil_block[i][1]
                     if isinstance(the_block, tuple):
@@ -427,6 +427,14 @@ def evalPerso(tupleVar):
                         get_bkp_i = False
                     i += 1
                     # fin while
+                # Si on se retrouve là, c'est qu'on est sortie du while :
+
+                # En mod "pas normal" car la fonction ne return rien, mais utilise une ref, donc on doit sortir des scopes précédent
+                while len(variables) != whenRecursiveFunctionBegin:
+                    exitScope()
+                    i_bkp.pop()
+
+                # En mod "normal" car tous les scopes ont été "supprimé" car la fonction recur renvoie une valeurs
                 return_value = return_value if return_value is not None else result
                 if return_value is not None and isinstance(return_value, tuple) and len(return_value) > 1:
                     return_value = return_value[1] if isinstance(return_value, tuple) else return_value
